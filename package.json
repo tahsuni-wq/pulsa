@@ -1,0 +1,27 @@
+{
+  "name": "pulsapay-h2h-server",
+  "version": "2.0.0",
+  "description": "Server Gateway Pulsa & PPOB H2H High-Concurrency dengan Web Dashboard, Direct Telco (Telkomsel/Indosat/XL) & Multi-Agregator",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js"
+  },
+  "keywords": [
+    "pulsa",
+    "ppob",
+    "h2h",
+    "telkomsel-direct",
+    "digiflazz",
+    "tripay",
+    "vip-reseller",
+    "proxmox"
+  ],
+  "author": "PulsaPay Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "qrcode": "^1.5.4"
+  }
+}

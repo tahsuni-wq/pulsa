@@ -8,20 +8,36 @@ import com.example.model.ProviderType
 object DefaultCatalogData {
     val initialProviders = listOf(
         H2HProvider(
+            id = "custom_rest",
+            name = "Server Kirana Solusi (Proxmox)",
+            type = ProviderType.CUSTOM_REST,
+            apiUrl = "https://pulsa.kiranasolusi.web.id/api/v1",
+            apiUsername = "kirana_admin",
+            apiKey = "PROXMOX_PULSAPAY_SECURE_TOKEN_2026",
+            secretOrPin = "1234",
+            isActive = true,
+            isPrimary = true,
+            priorityOrder = 1,
+            isSandbox = false,
+            balance = 2500000L,
+            lastBalanceCheck = System.currentTimeMillis(),
+            statusMessage = "Terhubung ke kiranasolusi.web.id"
+        ),
+        H2HProvider(
             id = "digiflazz",
-            name = "Digiflazz H2H",
+            name = "Digiflazz H2H (Backup Failover)",
             type = ProviderType.DIGIFLAZZ,
             apiUrl = "https://api.digiflazz.com/v1",
             apiUsername = "demo_pulsapay",
             apiKey = "dev-b3848b50-329b-11ea",
             secretOrPin = "dflazz_secret_99",
             isActive = true,
-            isPrimary = true,
-            priorityOrder = 1,
+            isPrimary = false,
+            priorityOrder = 2,
             isSandbox = true,
             balance = 1450000L,
             lastBalanceCheck = System.currentTimeMillis() - 120000L,
-            statusMessage = "Terkoneksi (Sandbox Mode)"
+            statusMessage = "Rute Cadangan Tier-2"
         ),
         H2HProvider(
             id = "vipreseller",
@@ -54,22 +70,6 @@ object DefaultCatalogData {
             balance = 560000L,
             lastBalanceCheck = System.currentTimeMillis() - 720000L,
             statusMessage = "Cadangan Tier-3"
-        ),
-        H2HProvider(
-            id = "custom_rest",
-            name = "Custom REST / OtomaX Engine",
-            type = ProviderType.CUSTOM_REST,
-            apiUrl = "https://h2h.serverpulsa.id/api/transaksi",
-            apiUsername = "SERVER_AGENT_01",
-            apiKey = "SECRET_TOKEN_H2H_8829",
-            secretOrPin = "PIN99",
-            isActive = false,
-            isPrimary = false,
-            priorityOrder = 4,
-            isSandbox = true,
-            balance = 300000L,
-            lastBalanceCheck = 0L,
-            statusMessage = "Nonaktif"
         )
     )
 

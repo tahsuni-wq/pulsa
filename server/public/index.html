@@ -3,167 +3,328 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PulsaPay H2H Server - Proxmox Central Dashboard</title>
-  <!-- Tailwind CSS -->
+  <title>Kirana Pay - Server Gateway Direct Telco & Multi-Supplier H2H</title>
+  <link rel="icon" type="image/png" href="/assets/kirana_logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- React, ReactDOM, and Recharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
-    .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.07); }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+    .gradient-brand { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%); }
+    .text-gradient { background: linear-gradient(135deg, #22d3ee, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased custom-scrollbar">
 
-  <!-- Sidebar -->
-  <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
-    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 font-black text-xl">
-        <i class="fa-solid fa-server"></i>
+  <!-- Sidebar Navigation -->
+  <aside class="w-full md:w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col shrink-0 backdrop-blur-xl">
+    <div class="p-4 border-b border-slate-800/80 flex items-center gap-3">
+      <div class="relative w-11 h-11 rounded-2xl overflow-hidden border border-cyan-500/40 shadow-lg shadow-cyan-500/20 bg-slate-950 flex items-center justify-center shrink-0">
+        <img src="/assets/kirana_logo.png" alt="Kirana Pay Logo" class="w-full h-full object-cover">
       </div>
       <div>
-        <h1 class="font-bold text-base tracking-tight text-white flex items-center gap-2">
-          PulsaPay H2H
-          <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">ONLINE</span>
+        <h1 class="font-extrabold text-base tracking-tight text-white flex items-center gap-2">
+          <span>Kirana Pay</span>
+          <span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono font-bold">ONLINE</span>
         </h1>
-        <p class="text-xs text-slate-400">Proxmox Gateway</p>
+        <p class="text-[11px] text-cyan-400/90 font-medium">Next-Gen Telco Gateway</p>
       </div>
     </div>
 
-    <!-- Navigation Menu -->
-    <nav class="p-3 space-y-1 text-sm font-medium flex-1">
-      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition">
-        <i class="fa-solid fa-chart-pie w-5 text-center"></i>
-        <span>Ringkasan Dashboard</span>
+    <!-- Navigation -->
+    <nav class="p-3 space-y-1 text-xs font-medium flex-1 overflow-y-auto custom-scrollbar">
+      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 py-1">Layanan Web</div>
+      <button onclick="switchTab('portal')" id="nav-portal" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 transition">
+        <i class="fa-solid fa-store w-4 text-center"></i>
+        <span>Portal Beli Pulsa (Web)</span>
+        <span class="ml-auto text-[9px] bg-cyan-500 text-slate-950 font-bold px-1.5 py-0.2 rounded">PUBLIK</span>
       </button>
-      <button onclick="switchTab('transactions')" id="nav-transactions" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
-        <i class="fa-solid fa-bolt w-5 text-center"></i>
+
+      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 pt-3 pb-1">Manajemen Server</div>
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+        <span>Ringkasan Server & TPS</span>
+      </button>
+      <button onclick="switchTab('transactions')" id="nav-transactions" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-bolt w-4 text-center"></i>
         <span>Monitor Transaksi</span>
-        <span id="badge-tx-count" class="ml-auto text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
+        <span id="badge-tx-count" class="ml-auto text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
       </button>
-      <button onclick="switchTab('providers')" id="nav-providers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
-        <i class="fa-solid fa-network-wired w-5 text-center"></i>
-        <span>Agregator H2H</span>
+      <button onclick="switchTab('providers')" id="nav-providers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-network-wired w-4 text-center"></i>
+        <span>Direct Telco & Supplier</span>
       </button>
-      <button onclick="switchTab('test')" id="nav-test" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
-        <i class="fa-solid fa-paper-plane w-5 text-center"></i>
-        <span>Test Kirim Pulsa</span>
+      <button onclick="switchTab('routing')" id="nav-routing" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-route w-4 text-center"></i>
+        <span>Smart Prefix Routing</span>
       </button>
-      <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
-        <i class="fa-solid fa-tags w-5 text-center"></i>
-        <span>Katalog & Markup</span>
+      <button onclick="switchTab('customers')" id="nav-customers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-users w-4 text-center"></i>
+        <span>Customer & Reseller</span>
       </button>
-      <button onclick="switchTab('connect')" id="nav-connect" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
-        <i class="fa-brands fa-android w-5 text-center text-emerald-400"></i>
-        <span>Koneksi HP Android</span>
+      <button onclick="switchTab('simulator')" id="nav-simulator" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-gauge-high w-4 text-center text-cyan-400"></i>
+        <span>Simulasi Beban (Stress Test)</span>
+      </button>
+      <button onclick="switchTab('api')" id="nav-api" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-code w-4 text-center"></i>
+        <span>REST API & Sandbox</span>
+      </button>
+      <button onclick="switchTab('telegram')" id="nav-telegram" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-brands fa-telegram w-4 text-center text-sky-400"></i>
+        <span>Bot Notifikasi Telegram</span>
+        <span id="badge-tg-status" class="ml-auto text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono font-bold">OFF</span>
       </button>
     </nav>
 
-    <!-- Host Info Footer -->
-    <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
-      <div class="flex items-center justify-between mb-1">
-        <span>Status Host</span>
-        <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sehat
-        </span>
+    <!-- Queue & Workers Widget -->
+    <div class="p-3.5 border-t border-slate-800/80 text-[11px] bg-slate-900/60">
+      <div class="flex items-center justify-between text-slate-400 mb-1.5">
+        <span>Worker Pool:</span>
+        <span class="text-cyan-400 font-mono font-bold" id="widget-workers">50 Active</span>
       </div>
-      <div class="text-[11px] text-slate-500 font-mono truncate" id="host-domain">
-        Port: 3000 | Domain Proxmox
+      <div class="flex items-center justify-between text-slate-400 mb-1.5">
+        <span>Current TPS:</span>
+        <span class="text-emerald-400 font-mono font-bold" id="widget-tps">0.0 TPS</span>
+      </div>
+      <div class="flex items-center justify-between text-slate-400">
+        <span>Queue Backlog:</span>
+        <span class="text-amber-400 font-mono font-bold" id="widget-queue">0 req</span>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content Area -->
+  <!-- Main Content -->
   <main class="flex-1 flex flex-col overflow-y-auto">
-    <!-- Top Bar -->
-    <header class="h-16 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between sticky top-0 z-20 backdrop-blur">
-      <div class="flex items-center gap-4">
-        <span class="text-slate-400 text-sm hidden md:inline">Server Gateway H2H</span>
-        <span class="text-slate-600 hidden md:inline">/</span>
-        <h2 id="top-title" class="text-base font-semibold text-white">Ringkasan Dashboard</h2>
+    <!-- Header -->
+    <header class="h-16 border-b border-slate-800/80 bg-slate-900/70 px-6 flex items-center justify-between sticky top-0 z-20 backdrop-blur-xl">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <img src="/assets/kirana_logo.png" alt="Kirana Pay" class="w-6 h-6 rounded-lg object-cover border border-cyan-500/30">
+          <span class="text-slate-400 text-xs hidden sm:inline font-bold">Kirana Pay Gateway</span>
+        </div>
+        <span class="text-slate-600 hidden sm:inline">/</span>
+        <h2 id="top-title" class="text-sm font-semibold text-white">Portal Beli Pulsa (Web Kiosk)</h2>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="refreshData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-2 transition border border-slate-700">
+        <button onclick="refreshData()" class="px-3.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl flex items-center gap-2 border border-slate-700/80 transition shadow-sm">
           <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i>
-          <span>Perbarui Data</span>
+          <span>Perbarui</span>
         </button>
-        <div class="flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Auto-Sync: <b>Aktif</b></span>
+        <div class="flex items-center gap-2 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-mono">Server Ready</span>
         </div>
       </div>
     </header>
 
-    <!-- TAB 1: DASHBOARD OVERVIEW -->
-    <section id="tab-dashboard" class="p-6 space-y-6">
+    <!-- ==================== TAB 0: PUBLIC WEB PORTAL ==================== -->
+    <section id="tab-portal" class="p-6 space-y-6">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Hero Banner with Kirana Pay Branding & Logo -->
+        <div class="glass-card p-6 sm:p-7 rounded-3xl relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950/40 to-cyan-950/40 border border-cyan-500/30 shadow-2xl">
+          <div class="absolute -right-16 -top-16 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-cyan-400/40 shadow-xl shadow-cyan-500/20 shrink-0 bg-slate-900">
+                <img src="/assets/kirana_logo.png" alt="Kirana Pay" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-widest bg-cyan-500/15 px-3 py-1 rounded-full border border-cyan-500/30">
+                  Kirana Pay Self-Service Kiosk
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-white mt-1.5 tracking-tight">
+                  Beli Pulsa, Data & Tagihan <span class="text-gradient">Cepat & Aman</span>
+                </h2>
+                <p class="text-xs text-slate-300/80 mt-1 max-w-lg leading-relaxed">
+                  Platform transaksi otomatis langsung terhubung ke Telkomsel DigiPOS, Indosat MOBO, XL SiDOMPUL, PLN, serta multi-supplier H2H dengan smart failover secepat 2 detik.
+                </p>
+              </div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700/80 p-3.5 rounded-2xl text-center shrink-0 w-full md:w-auto shadow-lg">
+              <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Waktu Proses Rata-rata</div>
+              <div class="text-2xl font-black text-emerald-400 font-mono mt-0.5" id="portal-avg-time">~0.4 Detik</div>
+              <div class="text-[10px] text-cyan-400 mt-0.5 font-medium flex items-center justify-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                <span>Direct Telco Engine</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Form Card -->
+        <div class="glass p-6 rounded-3xl space-y-5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">1. Masukkan Nomor HP atau No. Meter PLN</label>
+            <div class="relative">
+              <input type="text" id="portal-destination" placeholder="Contoh: 081234567890 atau 14234567890" oninput="onPortalInputPhone()" class="w-full px-4 py-3.5 bg-slate-900/90 border border-slate-700 rounded-xl text-base text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 pl-11">
+              <i class="fa-solid fa-mobile-screen text-slate-500 absolute left-4 top-4"></i>
+              <div id="portal-operator-badge" class="absolute right-3 top-2.5 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span>Ketik Nomor</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Selector -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">2. Pilih Kategori Produk</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button onclick="setPortalCategory('PULSA')" id="cat-btn-pulsa" class="py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
+                <i class="fa-solid fa-sim-card"></i> Pulsa Reguler
+              </button>
+              <button onclick="setPortalCategory('DATA')" id="cat-btn-data" class="py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-slate-900 text-slate-400 border-slate-800 hover:text-white">
+                <i class="fa-solid fa-wifi"></i> Paket Data
+              </button>
+              <button onclick="setPortalCategory('PLN')" id="cat-btn-pln" class="py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-slate-900 text-slate-400 border-slate-800 hover:text-white">
+                <i class="fa-solid fa-bolt"></i> Token PLN
+              </button>
+              <button onclick="setPortalCategory('E-MONEY')" id="cat-btn-emoney" class="py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-slate-900 text-slate-400 border-slate-800 hover:text-white">
+                <i class="fa-solid fa-wallet"></i> Topup E-Money
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Grid -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">3. Pilih Nominal / Produk</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="portal-products-grid">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Selected Product Summary & Checkout -->
+          <div id="portal-checkout-box" class="hidden p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div class="text-xs text-slate-400">Produk Dipilih:</div>
+              <div class="text-base font-bold text-white" id="portal-sel-name">-</div>
+              <div class="text-xs text-emerald-400 font-mono" id="portal-sel-dest">-</div>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <div class="text-right">
+                <div class="text-[10px] text-slate-400">Total Pembayaran</div>
+                <div class="text-xl font-black text-emerald-400 font-mono" id="portal-sel-price">Rp 0</div>
+              </div>
+              <button onclick="executePortalCheckout()" id="portal-btn-pay" class="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition shrink-0">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Bayar (QRIS Instant)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receipt / Status Modal Output in Portal -->
+        <div id="portal-result-card" class="hidden glass p-6 rounded-3xl border border-emerald-500/30 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+              <h4 class="font-bold text-emerald-400 text-sm">Status Transaksi: SUKSES</h4>
+            </div>
+            <span class="text-xs text-slate-400 font-mono" id="res-time">-</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div class="space-y-1.5">
+              <div class="text-slate-400">Nomor Tujuan: <span class="font-mono text-white font-bold" id="res-dest">-</span></div>
+              <div class="text-slate-400">Produk: <span class="text-white font-medium" id="res-product">-</span></div>
+              <div class="text-slate-400">Jalur Server: <span class="text-cyan-400 font-mono" id="res-provider">-</span></div>
+            </div>
+            <div class="space-y-1.5">
+              <div class="text-slate-400">Serial Number (SN):</div>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-emerald-400 text-[11px] break-all select-all font-bold" id="res-sn">-</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button onclick="printCurrentStruk()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-bold flex items-center gap-2 border border-slate-700">
+              <i class="fa-solid fa-print"></i> Cetak Struk
+            </button>
+            <button onclick="resetPortalForm()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-bold">
+              Transaksi Baru
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 1: SERVER & TPS DASHBOARD ==================== -->
+    <section id="tab-dashboard" class="p-6 space-y-6 hidden">
       <!-- 4 Stats Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass p-5 rounded-2xl relative overflow-hidden">
-          <div class="text-xs font-medium text-slate-400 mb-1">Total Saldo Modal di Agregator</div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs font-medium text-slate-400 mb-1">Total Saldo di Provider Direct & Agregator</div>
           <div class="text-2xl font-black text-emerald-400 font-mono tracking-tight" id="stat-total-balance">Rp 0</div>
-          <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-            <i class="fa-solid fa-wallet text-emerald-500"></i>
-            <span>Siap potong untuk transaksi</span>
+          <div class="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
+            <span class="text-cyan-400 font-mono">Direct Telco: <b id="stat-direct-balance">Rp 0</b></span>
           </div>
         </div>
 
-        <div class="glass p-5 rounded-2xl relative overflow-hidden">
-          <div class="text-xs font-medium text-slate-400 mb-1">Omset Transaksi Hari Ini</div>
-          <div class="text-2xl font-black text-cyan-400 font-mono tracking-tight" id="stat-today-revenue">Rp 0</div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs font-medium text-slate-400 mb-1">Throughput (TPS Real-time)</div>
+          <div class="text-2xl font-black text-cyan-400 font-mono tracking-tight flex items-baseline gap-2">
+            <span id="stat-current-tps">0.0</span>
+            <span class="text-xs font-normal text-slate-400">TPS</span>
+          </div>
           <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-            <i class="fa-solid fa-receipt text-cyan-500"></i>
-            <span id="stat-today-count">0 transaksi hari ini</span>
+            <i class="fa-solid fa-fire text-amber-400"></i>
+            <span>Peak TPS: <b class="text-amber-400 font-mono" id="stat-peak-tps">0 TPS</b></span>
           </div>
         </div>
 
-        <div class="glass p-5 rounded-2xl relative overflow-hidden">
-          <div class="text-xs font-medium text-slate-400 mb-1">Estimasi Keuntungan Bersih</div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs font-medium text-slate-400 mb-1">Laba Bersih Transaksi</div>
           <div class="text-2xl font-black text-amber-400 font-mono tracking-tight" id="stat-profit">Rp 0</div>
           <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-            <i class="fa-solid fa-coins text-amber-500"></i>
-            <span>Margin laba dari penjualan</span>
+            <i class="fa-solid fa-wallet text-emerald-400"></i>
+            <span>Saldo Customer: <b class="text-slate-300 font-mono" id="stat-cust-balance">Rp 0</b></span>
           </div>
         </div>
 
-        <div class="glass p-5 rounded-2xl relative overflow-hidden">
+        <div class="glass p-5 rounded-2xl">
           <div class="text-xs font-medium text-slate-400 mb-1">Tingkat Kesuksesan (Success Rate)</div>
-          <div class="text-2xl font-black text-white font-mono tracking-tight" id="stat-success-rate">100%</div>
+          <div class="text-2xl font-black text-white font-mono tracking-tight" id="stat-success-rate">99.8%</div>
           <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5" id="stat-tx-breakdown">
-            <span class="text-emerald-400 font-medium">0 Sukses</span> • 
-            <span class="text-rose-400 font-medium">0 Gagal</span> • 
-            <span class="text-amber-400 font-medium">0 Pending</span>
+            <span class="text-emerald-400 font-medium" id="stat-count-success">0 Sukses</span> • 
+            <span class="text-rose-400 font-medium" id="stat-count-failed">0 Gagal</span>
           </div>
         </div>
       </div>
 
-      <!-- Live Saldo Cards Per Agregator -->
+      <!-- Real-time Providers & Gateway Cards -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
-            <i class="fa-solid fa-building-columns text-emerald-400"></i>
-            Saldo Real-time Supplier & Agregator
+          <h3 class="font-bold text-slate-200 text-xs uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-network-wired text-emerald-400"></i>
+            Koneksi Direct Telco & Agregator Aktif
           </h3>
-          <span class="text-xs text-slate-400">Otomatis failover jika saldo salah satu menipis</span>
+          <span class="text-xs text-slate-400 font-mono">Failover Otomatis Aktif</span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="aggregator-cards-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="providers-cards-container">
           <!-- Populated by JS -->
         </div>
       </div>
 
-      <!-- Transaction Chart & Quick Action -->
+      <!-- Chart and Concurrency Info -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="glass p-5 rounded-2xl lg:col-span-2">
-          <h4 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
-            <i class="fa-solid fa-chart-line text-cyan-400"></i>
-            Grafik Penjualan & Aktivitas Pulsa (Hari Ini)
-          </h4>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold text-xs text-slate-200 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-cyan-400"></i>
+              Grafik Transaksi Hari Ini
+            </h4>
+            <span class="text-[11px] text-slate-400">Auto-update setiap 5 detik</span>
+          </div>
           <div class="h-64">
             <canvas id="trxChart"></canvas>
           </div>
@@ -171,41 +332,135 @@
 
         <div class="glass p-5 rounded-2xl flex flex-col justify-between">
           <div>
-            <h4 class="font-semibold text-sm text-slate-200 mb-2 flex items-center gap-2">
-              <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-              Status Failover Otomatis
+            <h4 class="font-semibold text-xs text-slate-200 mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-microchip text-emerald-400"></i>
+              Arsitektur High-Concurrency
             </h4>
             <p class="text-xs text-slate-400 leading-relaxed mb-4">
-              Ketika ada request pembelian dari aplikasi Android atau kasir, server akan mencoba agregator utama terlebih dahulu. Jika supplier utama mengalami gangguan atau SKU kosong, server langsung mengalihkan rute ke supplier cadangan secara instan tanpa membatalkan transaksi pembeli.
+              Server dilengkapi dengan <b>In-Memory Worker Queue</b> yang mampu memproses hingga ratusan transaksi per detik secara paralel. Proteksi idempotency aktif untuk mencegah duplikasi saldo jika ribuan customer mengirim order bersamaan.
             </p>
             <div class="space-y-2 text-xs font-mono">
-              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Prioritas 1</span>
-                <span class="text-emerald-400 font-bold" id="quick-p1">Digiflazz H2H</span>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex justify-between">
+                <span class="text-slate-400">Worker Concurrency</span>
+                <span class="text-emerald-400 font-bold">50 Parallel Threads</span>
               </div>
-              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Prioritas 2</span>
-                <span class="text-amber-400 font-bold" id="quick-p2">VIP Reseller</span>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex justify-between">
+                <span class="text-slate-400">Idempotency Guard</span>
+                <span class="text-cyan-400 font-bold">60s Dedup Active</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex justify-between">
+                <span class="text-slate-400">Primary Telkomsel</span>
+                <span class="text-amber-400 font-bold">DigiPOS Direct Core</span>
               </div>
             </div>
           </div>
-          <button onclick="switchTab('test')" class="w-full mt-4 py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>Test Kirim Transaksi Sekarang</span>
+          <button onclick="switchTab('simulator')" class="w-full mt-4 py-2.5 px-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Jalankan Stress Test Server</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Recharts Daily Profit Analytics Card -->
+      <div class="glass p-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-slate-900/90 to-slate-950 space-y-5">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Recharts Analytics Engine
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">Live Financial Performance</span>
+            </div>
+            <h3 class="text-lg font-black text-white mt-1.5 flex items-center gap-2">
+              <i class="fa-solid fa-money-bill-trend-up text-emerald-400"></i>
+              Tren Keuntungan Harian (Daily Profit)
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Grafik interaktif performa finansial harian: Laba Bersih, Omset Transaksi, dan Margin Keuntungan.
+            </p>
+          </div>
+
+          <!-- Controls: Days & Chart Type -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Period Selector -->
+            <div class="bg-slate-900 border border-slate-800 p-1 rounded-xl flex items-center gap-1 text-xs">
+              <button onclick="setProfitDays(7)" id="btn-days-7" class="px-3 py-1.5 rounded-lg font-bold bg-emerald-500 text-slate-950 transition text-[11px]">7 Hari</button>
+              <button onclick="setProfitDays(14)" id="btn-days-14" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px]">14 Hari</button>
+              <button onclick="setProfitDays(30)" id="btn-days-30" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px]">30 Hari</button>
+            </div>
+
+            <!-- Chart Style Selector -->
+            <div class="bg-slate-900 border border-slate-800 p-1 rounded-xl flex items-center gap-1 text-xs">
+              <button onclick="setProfitChartType('area')" id="btn-type-area" class="px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30 transition text-[11px] flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-area"></i> Area
+              </button>
+              <button onclick="setProfitChartType('bar')" id="btn-type-bar" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px] flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-column"></i> Bar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Financial KPI Chips -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80">
+            <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+              <span>Total Laba Periode Ini</span>
+              <i class="fa-solid fa-sack-dollar text-emerald-400"></i>
+            </div>
+            <div class="text-xl font-black text-emerald-400 font-mono mt-1" id="kpi-total-profit">Rp 0</div>
+            <div class="text-[10px] text-slate-500 mt-1 font-mono">Omset: <span class="text-slate-300" id="kpi-total-rev">Rp 0</span></div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80">
+            <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+              <span>Rata-rata Laba / Hari</span>
+              <i class="fa-solid fa-calculator text-cyan-400"></i>
+            </div>
+            <div class="text-xl font-black text-cyan-400 font-mono mt-1" id="kpi-avg-profit">Rp 0</div>
+            <div class="text-[10px] text-slate-500 mt-1 font-mono">Performa: <span class="text-emerald-400 font-bold">Stabil & Naik</span></div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80">
+            <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+              <span>Hari Keuntungan Tertinggi</span>
+              <i class="fa-solid fa-trophy text-amber-400"></i>
+            </div>
+            <div class="text-xl font-black text-amber-400 font-mono mt-1" id="kpi-peak-profit">Rp 0</div>
+            <div class="text-[10px] text-slate-500 mt-1 font-mono">Tanggal: <span class="text-slate-300" id="kpi-peak-date">-</span></div>
+          </div>
+        </div>
+
+        <!-- Recharts Interactive Canvas Container -->
+        <div class="w-full h-80 relative bg-slate-950/60 rounded-2xl p-2 border border-slate-900">
+          <div id="recharts-profit-container" class="w-full h-full flex items-center justify-center">
+            <div class="text-xs text-slate-500 flex items-center gap-2 font-mono">
+              <i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
+              <span>Memuat Recharts Daily Profit...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Area Hijau = Margin Laba Bersih Transaksi</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-slate-600"></span> Garis Horisontal = Titik Recharts Grid</span>
+          </div>
+          <span class="font-mono text-[10px] text-slate-500">Data sinkron otomatis dengan status order H2H</span>
         </div>
       </div>
     </section>
 
-    <!-- TAB 2: LIVE MONITOR TRANSAKSI -->
+    <!-- ==================== TAB 2: LIVE MONITOR TRANSAKSI ==================== -->
     <section id="tab-transactions" class="p-6 space-y-4 hidden">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h3 class="font-bold text-lg text-white">Live Monitor Transaksi Kasir & H2H</h3>
-          <p class="text-xs text-slate-400">Semua transaksi dari HP Android dan kasir tercatat secara transparan di sini</p>
+          <h3 class="font-bold text-base text-white">Live Monitor Transaksi Semua Customer</h3>
+          <p class="text-xs text-slate-400">Transaksi dari web portal, aplikasi Android, dan partner H2H tercatat real-time</p>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <input type="text" id="tx-search-input" placeholder="Cari No HP / SN / Ref ID..." oninput="filterTransactions()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-full sm:w-64 font-mono">
+          <input type="text" id="tx-search-input" placeholder="Cari No HP / SN / Ref ID..." oninput="filterTransactions()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-full sm:w-60 font-mono">
           <select id="tx-filter-status" onchange="filterTransactions()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none">
             <option value="ALL">Semua Status</option>
             <option value="SUCCESS">Sukses</option>
@@ -215,20 +470,19 @@
         </div>
       </div>
 
-      <!-- Table Container -->
       <div class="glass rounded-2xl overflow-hidden border border-slate-800">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800 uppercase font-medium">
               <tr>
                 <th class="py-3 px-4">Waktu</th>
-                <th class="py-3 px-4">Ref ID</th>
+                <th class="py-3 px-4">Customer</th>
                 <th class="py-3 px-4">No Tujuan</th>
                 <th class="py-3 px-4">Produk</th>
-                <th class="py-3 px-4">Jalur H2H</th>
-                <th class="py-3 px-4">Harga / Laba</th>
+                <th class="py-3 px-4">Jalur Terpilih</th>
+                <th class="py-3 px-4">Harga / Margin</th>
                 <th class="py-3 px-4">Status</th>
-                <th class="py-3 px-4">SN / Catatan</th>
+                <th class="py-3 px-4">SN / Serial Number</th>
                 <th class="py-3 px-4 text-center">Aksi</th>
               </tr>
             </thead>
@@ -240,79 +494,71 @@
       </div>
     </section>
 
-    <!-- TAB 3: AGREGATOR H2H -->
+    <!-- ==================== TAB 3: DIRECT TELCO & AGREGATOR ==================== -->
     <section id="tab-providers" class="p-6 space-y-6 hidden">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 class="font-bold text-lg text-white">Konfigurasi Agregator & Kredensial H2H</h3>
-          <p class="text-xs text-slate-400">Atur API Key, Endpoint, dan Mode Sandbox untuk masing-masing supplier</p>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+              Multi-Upstream H2H Engine
+            </span>
+            <span class="text-xs text-slate-400 font-mono" id="provider-count-summary">6 Supplier Aktif</span>
+          </div>
+          <h3 class="font-bold text-lg text-white mt-1 flex items-center gap-2">
+            <i class="fa-solid fa-server text-cyan-400"></i>
+            Direct Telco Gateway & Multi-Supplier H2H
+          </h3>
+          <p class="text-xs text-slate-400">Kelola koneksi langsung ke Telkomsel DigiPOS, Indosat MOBO, XL SiDOMPUL, PLN, serta Agregator / Supplier H2H lainnya.</p>
         </div>
-        <button onclick="openProviderModal(null)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-900/30 transition">
-          <i class="fa-solid fa-plus"></i>
-          <span>Tambah Provider Baru</span>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="providers-list-container">
-        <!-- Rendered via JS -->
-      </div>
-    </section>
-
-    <!-- TAB 4: TEST KIRIM PULSA -->
-    <section id="tab-test" class="p-6 space-y-6 hidden">
-      <div class="max-w-2xl mx-auto glass p-6 rounded-2xl">
-        <h3 class="font-bold text-base text-white mb-1 flex items-center gap-2">
-          <i class="fa-solid fa-vial text-emerald-400"></i>
-          Simulator & Test Eksekusi Transaksi H2H
-        </h3>
-        <p class="text-xs text-slate-400 mb-5">
-          Uji coba kelancaran respon API agregator langsung dari browser Anda tanpa harus menggunakan HP Android.
-        </p>
-
-        <form id="test-form" onsubmit="handleTestTrx(event)" class="space-y-4 text-xs">
-          <div>
-            <label class="block font-medium text-slate-300 mb-1">Nomor Tujuan / Pelanggan</label>
-            <input type="text" id="test-destination" placeholder="Contoh: 081234567890" value="081299887766" required class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
-          </div>
-
-          <div>
-            <label class="block font-medium text-slate-300 mb-1">Pilih Produk</label>
-            <select id="test-product" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
-              <!-- Populated by JS -->
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-medium text-slate-300 mb-1">Target Rute Provider</label>
-            <select id="test-provider" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
-              <!-- Populated by JS -->
-            </select>
-          </div>
-
-          <button type="submit" id="btn-submit-test" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>Kirim Test Transaksi Sekarang</span>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="openAddProviderModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition w-full sm:w-auto">
+            <i class="fa-solid fa-plus-circle text-sm"></i>
+            <span>Tambah Supplier Baru</span>
           </button>
-        </form>
-
-        <!-- Test Result Output -->
-        <div id="test-result-box" class="mt-6 hidden">
-          <div class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-terminal text-cyan-400"></i>
-            <span>Respon Server:</span>
-          </div>
-          <pre id="test-result-json" class="p-4 bg-slate-900 rounded-xl font-mono text-[11px] text-emerald-400 border border-slate-800 overflow-x-auto"></pre>
         </div>
+      </div>
+
+      <!-- Quick Filter & Search Bar for Providers -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+        <div class="flex items-center gap-2 overflow-x-auto text-xs pb-1 sm:pb-0">
+          <button onclick="filterProvidersByCategory('ALL')" id="btn-filter-prov-all" class="px-3 py-1.5 rounded-lg font-bold bg-cyan-500 text-slate-950 text-[11px] transition whitespace-nowrap">Semua Supplier</button>
+          <button onclick="filterProvidersByCategory('DIRECT_TELCO')" id="btn-filter-prov-direct" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-[11px] transition whitespace-nowrap">Direct Telco (Chip)</button>
+          <button onclick="filterProvidersByCategory('AGGREGATOR')" id="btn-filter-prov-agg" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-[11px] transition whitespace-nowrap">Agregator H2H</button>
+        </div>
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+          <input type="text" id="prov-search-input" oninput="renderFilteredProviders()" placeholder="Cari nama supplier / API URL..." class="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="all-providers-list">
+        <!-- Rendered by JS -->
       </div>
     </section>
 
-    <!-- TAB 5: KATALOG & MARKUP -->
-    <section id="tab-products" class="p-6 space-y-6 hidden">
-      <div class="flex items-center justify-between">
+    <!-- ==================== TAB 4: SMART PREFIX ROUTING ==================== -->
+    <section id="tab-routing" class="p-6 space-y-6 hidden">
+      <div>
+        <h3 class="font-bold text-base text-white">Smart Prefix Routing & Failover Matrix</h3>
+        <p class="text-xs text-slate-400">Atur prioritas jalur berdasarkan prefix nomor telepon untuk mendapatkan harga termurah dan kecepatan maksimal</p>
+      </div>
+
+      <div class="space-y-4" id="routing-rules-container">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: CUSTOMER & RESELLER ==================== -->
+    <section id="tab-customers" class="p-6 space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h3 class="font-bold text-lg text-white">Daftar Produk, Harga Beli & Harga Jual</h3>
-          <p class="text-xs text-slate-400">Atur margin laba bersih yang didapat dari setiap nominal transaksi</p>
+          <h3 class="font-bold text-base text-white">Manajemen Ribuan Customer & Agen Reseller</h3>
+          <p class="text-xs text-slate-400">Kelola akun customer, saldo deposit, level tier (Gold, Silver, H2H Partner), dan API Key</p>
         </div>
+        <button onclick="openAddCustomerModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Tambah Customer / Partner</span>
+        </button>
       </div>
 
       <div class="glass rounded-2xl overflow-hidden border border-slate-800">
@@ -320,86 +566,253 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800 uppercase font-medium">
               <tr>
-                <th class="py-3 px-4">Kode SKU</th>
-                <th class="py-3 px-4">Nama Produk</th>
-                <th class="py-3 px-4">Operator</th>
-                <th class="py-3 px-4">Harga Modal H2H</th>
-                <th class="py-3 px-4">Harga Jual Kasir</th>
-                <th class="py-3 px-4">Keuntungan</th>
-                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4">ID Customer</th>
+                <th class="py-3 px-4">Nama & Kontak</th>
+                <th class="py-3 px-4">Level Tier</th>
+                <th class="py-3 px-4">Saldo Deposit</th>
+                <th class="py-3 px-4">Total TRX</th>
+                <th class="py-3 px-4">API Key H2H</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody id="products-tbody" class="divide-y divide-slate-800 font-mono">
-              <!-- Rendered via JS -->
+            <tbody id="customers-tbody" class="divide-y divide-slate-800">
+              <!-- Rendered by JS -->
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- TAB 6: KONEKSI ANDROID & DOKUMENTASI -->
-    <section id="tab-connect" class="p-6 space-y-6 hidden">
+    <!-- ==================== TAB 6: STRESS TEST & LOAD SIMULATOR ==================== -->
+    <section id="tab-simulator" class="p-6 space-y-6 hidden">
       <div class="max-w-3xl mx-auto space-y-6">
-        <div class="glass p-6 rounded-2xl border-emerald-500/30">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
-              <i class="fa-brands fa-android"></i>
+        <div class="glass p-6 rounded-3xl border border-cyan-500/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xl">
+              <i class="fa-solid fa-gauge-high"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base text-white">Panduan Menghubungkan Aplikasi HP Android ke Proxmox</h3>
-              <p class="text-xs text-slate-400">Gunakan kredensial di bawah ini pada menu "Provider H2H" di aplikasi Android PulsaPay</p>
+              <h3 class="font-bold text-base text-white">Simulasi Beban Ribuan Customer</h3>
+              <p class="text-xs text-slate-400">Uji performa server menangani lonjakan transaksi simultan secara real-time</p>
             </div>
           </div>
 
-          <div class="space-y-4 text-xs font-mono">
-            <div>
-              <span class="text-slate-400 block mb-1">1. Tipe Provider di Android:</span>
-              <span class="inline-block bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-400 font-bold">CUSTOM REST</span>
-            </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-5">
+            <button onclick="runLoadSimulation(100)" id="btn-sim-100" class="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-500 text-left transition group">
+              <div class="text-xs text-slate-400">Uji Ringan</div>
+              <div class="text-lg font-black text-white group-hover:text-cyan-400 font-mono">100 Transaksi</div>
+              <div class="text-[10px] text-slate-500 mt-1">Multi-operator paralel</div>
+            </button>
+            <button onclick="runLoadSimulation(300)" id="btn-sim-300" class="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-500 text-left transition group">
+              <div class="text-xs text-slate-400">Uji Menengah</div>
+              <div class="text-lg font-black text-white group-hover:text-cyan-400 font-mono">300 Transaksi</div>
+              <div class="text-[10px] text-slate-500 mt-1">Simulasi rush hour</div>
+            </button>
+            <button onclick="runLoadSimulation(600)" id="btn-sim-600" class="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-500 text-left transition group">
+              <div class="text-xs text-slate-400">Uji Beban Puncak</div>
+              <div class="text-lg font-black text-cyan-400 font-mono">600 Transaksi</div>
+              <div class="text-[10px] text-cyan-500 mt-1">High-concurrency full worker</div>
+            </button>
+          </div>
 
-            <div>
-              <span class="text-slate-400 block mb-1">2. Base URL Endpoint (Domain Proxmox Anda):</span>
-              <div class="flex items-center gap-2">
-                <input type="text" readonly id="cfg-endpoint" value="https://domain-anda.com/api/v1" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-cyan-400 select-all">
-                <button onclick="copyToClipboard('cfg-endpoint')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+          <!-- Live Simulation Result Progress -->
+          <div id="sim-progress-box" class="hidden space-y-4 pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-semibold" id="sim-status-text">Memproses transaksi...</span>
+              <span class="text-cyan-400 font-mono font-bold" id="sim-tps-metric">Menghitung TPS...</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-800">
+              <div id="sim-progress-bar" class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-mono">
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-slate-500 text-[10px]">Total Terkirim</div>
+                <div class="font-bold text-white text-sm" id="sim-total-tx">0</div>
               </div>
-            </div>
-
-            <div>
-              <span class="text-slate-400 block mb-1">3. API Key / Token:</span>
-              <div class="flex items-center gap-2">
-                <input type="text" readonly id="cfg-token" value="PROXMOX_PULSAPAY_SECURE_TOKEN_2026" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-emerald-400 select-all">
-                <button onclick="copyToClipboard('cfg-token')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-slate-500 text-[10px]">Sukses</div>
+                <div class="font-bold text-emerald-400 text-sm" id="sim-success-tx">0</div>
               </div>
-            </div>
-
-            <div>
-              <span class="text-slate-400 block mb-1">4. PIN Transaksi:</span>
-              <div class="flex items-center gap-2">
-                <input type="text" readonly id="cfg-pin" value="1234" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-amber-400 select-all">
-                <button onclick="copyToClipboard('cfg-pin')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-slate-500 text-[10px]">Waktu Eksekusi</div>
+                <div class="font-bold text-cyan-400 text-sm" id="sim-duration-tx">0 ms</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-slate-500 text-[10px]">Hasil Throughput</div>
+                <div class="font-bold text-amber-400 text-sm" id="sim-rate-tx">0 TPS</div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Webhook URLs -->
-        <div class="glass p-6 rounded-2xl">
-          <h4 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-bullhorn text-cyan-400"></i>
-            URL Callback / Webhook untuk Pasang di Digiflazz / Tripay
-          </h4>
-          <p class="text-xs text-slate-400 mb-4">
-            Salin URL ini dan tempel di portal member Digiflazz atau Tripay Anda agar status transaksi sukses/gagal langsung ter-update otomatis secara real-time.
-          </p>
-          <div class="space-y-3 text-xs font-mono">
+    <!-- ==================== TAB 7: REST API & SANDBOX ==================== -->
+    <section id="tab-api" class="p-6 space-y-6 hidden">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h3 class="font-bold text-base text-white">Dokumentasi REST API & Sandbox Interaktif</h3>
+          <p class="text-xs text-slate-400">Endpoint standar yang dapat digunakan oleh partner H2H, downline, atau aplikasi Android</p>
+        </div>
+
+        <div class="glass p-5 rounded-2xl space-y-3 font-mono text-xs">
+          <div class="text-emerald-400 font-bold">POST /api/v1/transaksi</div>
+          <p class="text-slate-400 font-sans text-xs">Digunakan untuk melakukan pengisian pulsa, paket data, PLN, dan e-money dengan failover otomatis.</p>
+          <pre class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto">{
+  "destination": "081234567890",
+  "product_code": "TSEL10",
+  "partner_ref": "REF-MERCHANT-9901",
+  "token": "PROXMOX_PULSAPAY_SECURE_TOKEN_2026",
+  "pin": "1234"
+}</pre>
+        </div>
+
+        <div class="glass p-5 rounded-2xl space-y-3 font-mono text-xs">
+          <div class="text-cyan-400 font-bold">POST /api/v1/cek-saldo</div>
+          <pre class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto">{
+  "token": "PROXMOX_PULSAPAY_SECURE_TOKEN_2026"
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 8: TELEGRAM BOT NOTIFICATIONS ==================== -->
+    <section id="tab-telegram" class="p-6 space-y-6 hidden">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Hero Card -->
+        <div class="glass p-6 rounded-3xl relative overflow-hidden bg-gradient-to-r from-sky-950/40 via-slate-900 to-indigo-950/40 border border-sky-500/20">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <span class="text-slate-400 block mb-1">Webhook Digiflazz:</span>
-              <input type="text" readonly id="wh-digi" value="https://domain-anda.com/api/webhook/digiflazz" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-slate-300 select-all">
+              <span class="text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-sky-500/10 px-2.5 py-1 rounded-full border border-sky-500/20">Real-Time Alert Gateway</span>
+              <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
+                <i class="fa-brands fa-telegram text-sky-400"></i>
+                Integrasi Bot Notifikasi Telegram
+              </h2>
+              <p class="text-xs text-slate-400 mt-1 max-w-xl">
+                Kirim notifikasi instan langsung ke akun Telegram pribadi admin atau Channel/Grup konter setiap kali ada transaksi Sukses atau Gagal secara real-time.
+              </p>
             </div>
+            <div id="tg-status-indicator" class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-center shrink-0 min-w-[140px]">
+              <div class="text-[10px] text-slate-400">Status Bot:</div>
+              <div class="text-sm font-bold text-rose-400 font-mono mt-0.5" id="tg-status-badge">NONAKTIF</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Form Configuration Card -->
+          <div class="glass p-6 rounded-3xl border border-slate-800 lg:col-span-2 space-y-5">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-sliders text-sky-400"></i>
+              Konfigurasi Kredensial Bot API
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Switch Enable -->
+              <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-white">Aktifkan Notifikasi Telegram</div>
+                  <div class="text-[11px] text-slate-400">Kirim laporan transaksi otomatis ke Telegram</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="tg-enable-switch" class="sr-only peer" onchange="toggleTgEnableUI()">
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                </label>
+              </div>
+
+              <!-- Bot Token -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                  1. Telegram Bot Token <span class="text-rose-400">*</span>
+                </label>
+                <div class="relative">
+                  <input type="text" id="tg-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRstuVWXyz" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-sky-500">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">
+                  Dapatkan Bot Token gratis dari akun resmi <b>@BotFather</b> di aplikasi Telegram (ketik command <code>/newbot</code>).
+                </p>
+              </div>
+
+              <!-- Admin Chat ID -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                  2. Admin / Group Chat ID <span class="text-rose-400">*</span>
+                </label>
+                <div class="relative">
+                  <input type="text" id="tg-chat-id" placeholder="Contoh: 987654321 atau -1001234567890 (Grup)" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-sky-500">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">
+                  Kirim pesan apa saja ke bot <b>@userinfobot</b> di Telegram untuk mengetahui Chat ID Anda. Untuk grup, masukkan ID grup (diawali minus).
+                </p>
+              </div>
+
+              <!-- Checkbox Notification Filters -->
+              <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+                <div class="text-xs font-semibold text-slate-300 mb-1">Kirim Notifikasi Saat:</div>
+                <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" id="tg-notify-success" checked class="w-4 h-4 rounded text-sky-500 bg-slate-900 border-slate-700 focus:ring-0">
+                  <span>Transaksi Berhasil (SUKSES)</span>
+                </label>
+                <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" id="tg-notify-failed" checked class="w-4 h-4 rounded text-sky-500 bg-slate-900 border-slate-700 focus:ring-0">
+                  <span>Transaksi Gagal (FAILED / Saldo Kurang / SKU Gangguan)</span>
+                </label>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button onclick="saveTelegramConfig()" id="btn-save-tg" class="w-full sm:w-auto px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-900/30 transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  <span>Simpan Pengaturan Bot</span>
+                </button>
+                <button onclick="testTelegramBot()" id="btn-test-tg" class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold text-xs rounded-xl border border-sky-500/30 transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-paper-plane"></i>
+                  <span>Kirim Pesan Uji Coba (Test Bot)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Telegram Message Preview Mockup -->
+          <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
             <div>
-              <span class="text-slate-400 block mb-1">Webhook Tripay:</span>
-              <input type="text" readonly id="wh-tripay" value="https://domain-anda.com/api/webhook/tripay" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-slate-300 select-all">
+              <h4 class="font-bold text-xs text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <i class="fa-brands fa-telegram text-sky-400"></i>
+                Preview Notifikasi di Telegram
+              </h4>
+
+              <!-- Realistic Telegram Bubble Mockup -->
+              <div class="bg-slate-900 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-2 text-xs font-mono">
+                <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                  <div class="w-7 h-7 rounded-full bg-cyan-500 flex items-center justify-center text-white text-[11px] font-bold">
+                    KP
+                  </div>
+                  <div>
+                    <div class="text-[11px] font-bold text-white font-sans">Kirana Pay Notifier Bot</div>
+                    <div class="text-[9px] text-slate-500 font-sans">bot</div>
+                  </div>
+                </div>
+
+                <div class="text-emerald-400 font-bold">⚡ TRANSAKSI SUKSES #KiranaPay</div>
+                <div class="text-slate-500 text-[10px]">━━━━━━━━━━━━━━━━━━━━</div>
+                <div class="space-y-1 text-[11px] text-slate-300 font-sans">
+                  <div>📱 <b>Tujuan:</b> <span class="font-mono text-white">081234567890</span> (TELKOMSEL)</div>
+                  <div>📦 <b>Produk:</b> Telkomsel 10.000 (<span class="font-mono text-cyan-400">TSEL10</span>)</div>
+                  <div>💰 <b>Harga:</b> <span class="font-mono font-bold text-emerald-400">Rp 12.000</span></div>
+                  <div>📈 <b>Laba:</b> <span class="font-mono text-amber-400">Rp 1.750</span></div>
+                  <div>📡 <b>Jalur:</b> <span class="text-cyan-400 font-mono">Telkomsel Direct DigiPOS</span></div>
+                  <div>🔢 <b>SN:</b> <span class="font-mono text-slate-400">260923113440/TSEL/7890/6740</span></div>
+                  <div>👤 <b>Customer:</b> Web Retail</div>
+                  <div>⏱️ <b>Waktu:</b> 12:04:12 WIB</div>
+                </div>
+                <div class="text-slate-500 text-[10px]">━━━━━━━━━━━━━━━━━━━━</div>
+                <div class="text-[10px] text-slate-400 italic font-sans">Status: 200 OK (38ms)</div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-xl bg-sky-950/20 border border-sky-500/20 text-[11px] text-slate-400">
+              <i class="fa-solid fa-circle-info text-sky-400 mr-1"></i>
+              Notifikasi dikirim secara <b>asynchronous (non-blocking)</b> sehingga tidak mempengaruhi kecepatan respon server.
             </div>
           </div>
         </div>
@@ -407,497 +820,1767 @@
     </section>
   </main>
 
-  <!-- Detail Modal -->
-  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass max-w-2xl w-full rounded-2xl p-6 relative border border-slate-700">
-      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      <h3 class="text-base font-bold text-white mb-1" id="modal-tx-id">TRX Details</h3>
-      <p class="text-xs text-slate-400 mb-4" id="modal-tx-meta"></p>
-
-      <div class="space-y-3 text-xs">
-        <div>
-          <span class="text-slate-400 block mb-1 font-semibold">Catatan Rute Failover:</span>
-          <div id="modal-tx-failover" class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 font-mono text-[11px]"></div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block mb-1 font-semibold">Raw Request JSON:</span>
-          <pre id="modal-tx-rawreq" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-mono text-[11px] max-h-36 overflow-y-auto"></pre>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block mb-1 font-semibold">Raw Response JSON:</span>
-          <pre id="modal-tx-rawresp" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 font-mono text-[11px] max-h-36 overflow-y-auto"></pre>
-        </div>
+  <!-- Deposit Modal -->
+  <div id="modal-deposit" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass max-w-md w-full p-6 rounded-3xl space-y-4">
+      <h3 class="font-bold text-sm text-white flex items-center gap-2">
+        <i class="fa-solid fa-money-bill-wave text-emerald-400"></i>
+        <span>Tambah Deposit Saldo Customer</span>
+      </h3>
+      <div class="text-xs text-slate-400" id="deposit-cust-name">-</div>
+      <input type="hidden" id="deposit-cust-id">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Nominal Tambah Saldo (Rp)</label>
+        <input type="number" id="deposit-amount" placeholder="500000" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeDepositModal()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl">Batal</button>
+        <button onclick="submitDeposit()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl">Simpan Deposit</button>
       </div>
     </div>
   </div>
 
-  <!-- Provider Edit Modal -->
-  <div id="provider-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass max-w-md w-full rounded-2xl p-6 relative border border-slate-700">
-      <button onclick="closeProviderModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      <h3 class="text-base font-bold text-white mb-4" id="prov-modal-title">Konfigurasi Agregator</h3>
-      
-      <form id="prov-form" onsubmit="saveProvider(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="p-id">
+  <!-- Add Customer Modal -->
+  <div id="modal-customer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass max-w-md w-full p-6 rounded-3xl space-y-4 border border-emerald-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-sm text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-emerald-400"></i>
+          <span>Tambah Customer / Partner Reseller</span>
+        </h3>
+        <button onclick="closeAddCustomerModal()" class="text-slate-400 hover:text-white text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-3 text-xs">
         <div>
-          <label class="block text-slate-300 mb-1">Nama Provider</label>
-          <input type="text" id="p-name" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+          <label class="block font-semibold text-slate-300 mb-1">Nama Customer / Konter <span class="text-rose-400">*</span></label>
+          <input type="text" id="new-cust-name" placeholder="Contoh: Berkah Cell / Mitra H2H" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
         </div>
         <div>
-          <label class="block text-slate-300 mb-1">Tipe Integrasi</label>
-          <select id="p-type" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-            <option value="DIGIFLAZZ">Digiflazz H2H</option>
-            <option value="VIP_RESELLER">VIP Reseller</option>
-            <option value="TRIPAY">Tripay H2H</option>
-            <option value="CUSTOM_REST">Custom REST Server</option>
+          <label class="block font-semibold text-slate-300 mb-1">No. WhatsApp / HP <span class="text-rose-400">*</span></label>
+          <input type="tel" id="new-cust-phone" placeholder="081234567890" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Level Tier Customer</label>
+          <select id="new-cust-tier" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
+            <option value="GOLD_PARTNER">Gold Partner (Reseller Utama)</option>
+            <option value="H2H_API">H2H API Merchant (Integrasi Otomatis)</option>
+            <option value="RETAIL" selected>Retail / Konter Umum</option>
           </select>
         </div>
         <div>
-          <label class="block text-slate-300 mb-1">API Base URL</label>
-          <input type="text" id="p-url" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+          <label class="block font-semibold text-slate-300 mb-1">Saldo Awal Deposit (Rp)</label>
+          <input type="number" id="new-cust-balance" placeholder="250000" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500">
         </div>
-        <div>
-          <label class="block text-slate-300 mb-1">API Username / Merchant Code</label>
-          <input type="text" id="p-username" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button onclick="closeAddCustomerModal()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl">Batal</button>
+        <button onclick="submitNewCustomer()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl">Simpan Customer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic QRIS Payment Modal -->
+  <div id="modal-qris" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="glass-card max-w-md w-full rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl relative animate-in fade-in zoom-in duration-200 my-auto">
+      
+      <!-- Official Indonesian QRIS Header Bar -->
+      <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-4 text-white flex items-center justify-between shadow-md">
+        <div class="flex items-center gap-2.5">
+          <!-- Official QRIS Badge -->
+          <div class="bg-white px-2 py-0.5 rounded shadow-sm text-slate-950 font-black tracking-widest text-xs flex items-center gap-1">
+            <span class="text-red-600 font-extrabold text-[13px]">QRIS</span>
+            <span class="text-[9px] bg-red-600 text-white font-bold px-1 rounded">GPN</span>
+          </div>
+          <div>
+            <div class="font-extrabold text-xs tracking-tight leading-tight">PEMBAYARAN DIGITAL NASIONAL</div>
+            <div class="text-[10px] text-red-100 font-medium">Kirana Pay Switching Gateway</div>
+          </div>
         </div>
-        <div>
-          <label class="block text-slate-300 mb-1">API Key / Secret Token</label>
-          <input type="password" id="p-key" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">PIN Transaksi</label>
-          <input type="text" id="p-pin" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
-        </div>
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="p-sandbox" class="rounded bg-slate-900 border-slate-700">
-          <label for="p-sandbox" class="text-slate-300">Mode Sandbox / Simulasi (Tanpa potong saldo)</label>
-        </div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="p-active" checked class="rounded bg-slate-900 border-slate-700">
-          <label for="p-active" class="text-slate-300">Aktifkan Jalur Agregator Ini</label>
+        <button onclick="closeQrisModal()" class="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Merchant Info & Live Countdown -->
+      <div class="p-5 pb-0 space-y-3">
+        <div class="flex items-center justify-between text-xs bg-slate-900/90 border border-slate-800 rounded-2xl p-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl overflow-hidden border border-cyan-400/40 bg-slate-950 shrink-0 flex items-center justify-center">
+              <img src="/assets/kirana_logo.png" alt="Kirana Pay" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <div class="font-black text-white text-xs tracking-wide">KIRANA PAY</div>
+              <div class="text-[10px] text-slate-400 font-mono">NMID: ID10260923001</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">Berlaku Hingga</div>
+            <div class="text-xs font-bold font-mono text-amber-400 flex items-center justify-end gap-1.5" id="qris-timer-text">
+              <i class="fa-regular fa-clock text-[10px] animate-spin" style="animation-duration: 4s;"></i>
+              <span id="qris-timer-countdown">10:00</span>
+            </div>
+          </div>
         </div>
 
-        <button type="submit" class="w-full py-2.5 mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition">
-          Simpan Konfigurasi
+        <!-- Dynamic QR Code Card -->
+        <div class="bg-white rounded-2xl p-4 text-center shadow-inner relative border border-slate-200">
+          <!-- Loading placeholder -->
+          <div id="qris-loading" class="py-12 flex flex-col items-center justify-center gap-3">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-cyan-600"></i>
+            <span class="text-xs font-bold text-slate-700">Menghasilkan Kode QRIS Dinamis...</span>
+          </div>
+
+          <!-- Active QR Display -->
+          <div id="qris-display-area" class="hidden space-y-2">
+            <div class="relative inline-block mx-auto group">
+              <img id="qris-image" src="" alt="Dynamic QRIS" class="w-52 h-52 sm:w-60 sm:h-60 mx-auto rounded-lg object-contain shadow-sm border border-slate-100 bg-white">
+              
+              <!-- Center Logo Watermark Accent -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-9 h-9 rounded-xl bg-white p-0.5 shadow-md border border-cyan-500/40 flex items-center justify-center">
+                  <img src="/assets/kirana_logo.png" class="w-full h-full rounded-lg object-cover">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-600 font-medium pt-1">
+              <i class="fa-solid fa-shield-halved text-emerald-600 text-xs"></i>
+              <span>Scan via Aplikasi E-Wallet / Mobile Banking</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Breakdown -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2 text-xs">
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Nomor Invoice:</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-white font-bold" id="qris-invoice-label">-</span>
+              <button onclick="copyInvoiceId()" title="Salin Invoice" class="text-cyan-400 hover:text-cyan-300 text-[10px]">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Tujuan:</span>
+            <span class="font-mono text-cyan-400 font-bold" id="qris-dest-label">-</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Produk:</span>
+            <span class="text-white font-medium" id="qris-product-label">-</span>
+          </div>
+          <div class="flex justify-between items-baseline pt-2 border-t border-slate-800">
+            <span class="text-slate-300 font-bold">Total Pembayaran:</span>
+            <span class="text-xl font-black text-emerald-400 font-mono" id="qris-amount-label">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Scannable Supported Apps Pills -->
+        <div class="pt-1">
+          <div class="text-[10px] text-slate-400 text-center mb-1.5 font-medium">Didukung oleh seluruh aplikasi berlogo QRIS:</div>
+          <div class="flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-bold">BCA</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-bold">Mandiri</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-bold">BRImo</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-bold">BNI</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-emerald-400 font-bold">GoPay</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-sky-400 font-bold">DANA</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-purple-400 font-bold">OVO</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-orange-400 font-bold">ShopeePay</span>
+          </div>
+        </div>
+
+        <!-- Testing & Developer Action Utilities -->
+        <div class="bg-slate-950/80 p-3 rounded-2xl border border-slate-800 space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+            <span>Aksi Pembayaran & Simulator</span>
+            <span class="text-emerald-400 flex items-center gap-1 font-mono text-[9px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              Auto-checking
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="copyQrisString()" class="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-code text-cyan-400"></i>
+              <span>Salin String QRIS</span>
+            </button>
+            <button onclick="downloadQrisImage()" class="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-download text-emerald-400"></i>
+              <span>Unduh Gambar QR</span>
+            </button>
+          </div>
+
+          <!-- Instant E-Wallet Simulation Button Group -->
+          <div class="pt-1">
+            <div class="text-[10px] text-slate-400 mb-1">Simulasi Scan & Bayar Instan:</div>
+            <div class="grid grid-cols-3 gap-1.5 text-[11px]">
+              <button onclick="triggerSimulatedScanPay('GOPAY')" class="py-1.5 px-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold rounded-lg transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-mobile-screen"></i> GoPay
+              </button>
+              <button onclick="triggerSimulatedScanPay('DANA')" class="py-1.5 px-2 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 font-bold rounded-lg transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-wallet"></i> DANA
+              </button>
+              <button onclick="triggerSimulatedScanPay('BCA_QRIS')" class="py-1.5 px-2 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-300 font-bold rounded-lg transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-building-columns"></i> BCA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Check / Cancel Buttons -->
+        <div class="flex items-center gap-2 pb-5 pt-1">
+          <button onclick="closeQrisModal()" class="w-1/3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition">
+            Batal
+          </button>
+          <button onclick="checkQrisStatusManual()" id="btn-check-qris" class="w-2/3 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Cek Status Pembayaran</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Verified Success State Animation Overlay -->
+      <div id="qris-success-overlay" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-6 text-center space-y-4 z-20">
+        <div class="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl animate-bounce">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-extrabold text-white">Pembayaran QRIS Berhasil!</h3>
+          <p class="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
+            Dana telah terverifikasi. Transaksi sedang diteruskan ke Core Direct Telco...
+          </p>
+        </div>
+        <div class="w-12 h-1 bg-emerald-400 rounded-full animate-pulse"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Modal for Print -->
+  <div id="modal-receipt" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white text-slate-950 max-w-xs w-full p-5 rounded-2xl shadow-2xl font-mono text-xs space-y-3">
+      <div class="text-center border-b border-dashed border-slate-300 pb-2">
+        <div class="font-black text-sm tracking-wide">KIRANA PAY KIOSK</div>
+        <div class="text-[10px] text-slate-600">STRUK TRANSAKSI RESMI</div>
+      </div>
+      <div class="space-y-1 text-[11px]">
+        <div class="flex justify-between"><span>Waktu:</span><span id="print-time">-</span></div>
+        <div class="flex justify-between"><span>No. Tujuan:</span><span id="print-dest" class="font-bold">-</span></div>
+        <div class="flex justify-between"><span>Produk:</span><span id="print-product">-</span></div>
+        <div class="flex justify-between"><span>Harga:</span><span id="print-price" class="font-bold">-</span></div>
+      </div>
+      <div class="border-t border-b border-dashed border-slate-300 py-2 text-[10px] break-all">
+        <span class="text-slate-600">SN:</span> <b id="print-sn">-</b>
+      </div>
+      <div class="text-center text-[10px] text-slate-500">
+        Terima Kasih Atas Transaksi Anda!
+      </div>
+      <button onclick="closeReceiptModal()" class="w-full py-2 bg-slate-900 text-white rounded-lg font-sans text-xs font-bold mt-2">
+        Tutup
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Tambah / Edit Supplier (Provider H2H) -->
+  <div id="modal-provider" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass max-w-xl w-full p-6 sm:p-7 rounded-3xl space-y-5 border border-cyan-500/30 my-8 shadow-2xl bg-gradient-to-b from-slate-900 to-slate-950">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <i class="fa-solid fa-server text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white" id="modal-provider-title">Tambah Supplier / Provider Baru</h3>
+            <p class="text-xs text-slate-400">Hubungkan upstream direct telco atau agregator H2H baru ke sistem</p>
+          </div>
+        </div>
+        <button onclick="closeProviderModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
         </button>
+      </div>
+
+      <form id="form-provider" onsubmit="event.preventDefault(); submitProviderForm();" class="space-y-4 text-xs">
+        <input type="hidden" id="prov-form-mode" value="add">
+        <input type="hidden" id="prov-form-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nama Supplier / Provider <span class="text-rose-400">*</span></label>
+            <input type="text" id="prov-form-name" required placeholder="Contoh: Tokovoucher H2H, Axis Direct" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Kategori Supplier <span class="text-rose-400">*</span></label>
+            <select id="prov-form-category" onchange="handleCategoryChange()" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-500">
+              <option value="AGGREGATOR">Agregator H2H (Multi-Operator)</option>
+              <option value="DIRECT_TELCO">Direct Telco (Chip Outlet Resmi)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Tipe Integrasi Engine</label>
+            <select id="prov-form-type" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+              <option value="DIGIFLAZZ">Digiflazz API (MD5 Sign)</option>
+              <option value="VIP_RESELLER">VIP Reseller API (Key & Sign)</option>
+              <option value="TRIPAY">Tripay H2H API</option>
+              <option value="TELKOMSEL_DIRECT">Telkomsel Direct DigiPOS</option>
+              <option value="INDOSAT_DIRECT">Indosat IM3 MOBO</option>
+              <option value="XL_DIRECT">XL SiDOMPUL Direct</option>
+              <option value="PLN_DIRECT">PLN Host-to-Host B2B</option>
+              <option value="AGGREGATOR_CUSTOM" selected>Custom JSON REST API (Universal)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Operator Yang Didukung</label>
+            <input type="text" id="prov-form-operators" placeholder="ALL atau TELKOMSEL, INDOSAT, XL, PLN" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+            <span class="text-[10px] text-slate-500">Pisahkan dengan koma atau tulis <b>ALL</b></span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Endpoint API URL <span class="text-rose-400">*</span></label>
+          <input type="url" id="prov-form-apiurl" required placeholder="https://api.namaprovider.com/v1" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">API Username / Buyer ID</label>
+            <input type="text" id="prov-form-username" placeholder="user_merchant123" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">API Key / Secret Token <span class="text-rose-400">*</span></label>
+            <input type="text" id="prov-form-apikey" required placeholder="dev-key-xxxx-xxxx" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">PIN / Secret Tambahan</label>
+            <input type="password" id="prov-form-pin" placeholder="1234 (opsional)" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Outlet / Chip ID</label>
+            <input type="text" id="prov-form-outletid" placeholder="OUTLET-001 (opsional)" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Saldo Awal (Rp)</label>
+            <input type="number" id="prov-form-balance" placeholder="2500000" class="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500">
+          </div>
+        </div>
+
+        <!-- Toggles & Status -->
+        <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-300 font-medium">Status Supplier Aktif</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="prov-form-active" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-slate-300 font-medium">Mode Sandbox / Simulasi Respon Cepat</span>
+              <p class="text-[10px] text-slate-500">Bila aktif, transaksi direspon instan dengan Serial Number dummy</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="prov-form-sandbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeProviderModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
+            Batal
+          </button>
+          <button type="submit" id="btn-save-provider" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span id="btn-save-provider-text">Simpan Supplier</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
   <script>
-    let globalData = { stats: {}, transactions: [], providers: [], products: [] };
+    // State
+    let currentTab = 'portal';
+    let currentCategory = 'PULSA';
+    let detectedOperator = 'TELKOMSEL';
+    let allProducts = [];
+    let selectedProduct = null;
+    let cachedStats = {};
+    let cachedTransactions = [];
+    let lastTrxResult = null;
     let chartInstance = null;
+    let activeQrisInvoice = null;
+    let qrisPollInterval = null;
+    let qrisCountdownInterval = null;
 
-    // Switch Tabs
+    // Tab Switching
     function switchTab(tabId) {
-      const tabs = ['dashboard', 'transactions', 'providers', 'test', 'products', 'connect'];
+      currentTab = tabId;
+      const tabs = ['portal', 'dashboard', 'transactions', 'providers', 'routing', 'customers', 'simulator', 'api', 'telegram'];
       tabs.forEach(t => {
-        document.getElementById(`tab-${t}`)?.classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (navBtn) {
-          navBtn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition";
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
+        if (el) el.classList.toggle('hidden', t !== tabId);
+        if (btn) {
+          if (t === tabId) {
+            btn.className = 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition';
+          } else {
+            btn.className = 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition';
+          }
         }
       });
-      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
-      const activeNav = document.getElementById(`nav-${tabId}`);
-      if (activeNav) {
-        activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition";
-      }
 
       const titles = {
-        dashboard: "Ringkasan Dashboard",
-        transactions: "Live Monitor Transaksi",
-        providers: "Koneksi Agregator H2H",
-        test: "Test Kirim Pulsa",
-        products: "Katalog & Markup",
-        connect: "Koneksi HP Android"
+        portal: 'Portal Beli Pulsa (Web Kiosk)',
+        dashboard: 'Ringkasan Server & TPS',
+        transactions: 'Live Monitor Transaksi',
+        providers: 'Direct Telco & Agregator',
+        routing: 'Smart Prefix Routing',
+        customers: 'Customer & Reseller Management',
+        simulator: 'Simulasi Beban (Stress Test)',
+        api: 'REST API & Sandbox',
+        telegram: 'Integrasi Bot Notifikasi Telegram'
       };
-      document.getElementById('top-title').innerText = titles[tabId] || "Dashboard";
+      document.getElementById('top-title').innerText = titles[tabId] || 'PulsaPay Gateway';
 
-      if (tabId === 'dashboard') renderChart();
-    }
-
-    // Format Rupiah
-    function formatRupiah(num) {
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
-    }
-
-    // Refresh Data
-    async function refreshData() {
-      const icon = document.getElementById('refresh-icon');
-      icon.classList.add('fa-spin');
-      try {
-        const [statsRes, txRes, provRes, prodRes] = await Promise.all([
-          fetch('/api/stats').then(r => r.json()),
-          fetch('/api/transactions?limit=100').then(r => r.json()),
-          fetch('/api/providers').then(r => r.json()),
-          fetch('/api/products').then(r => r.json())
-        ]);
-
-        globalData = { stats: statsRes, transactions: txRes, providers: provRes, products: prodRes };
-        renderAll();
-      } catch (err) {
-        console.error("Gagal sinkronisasi data:", err);
-      } finally {
-        setTimeout(() => icon.classList.remove('fa-spin'), 600);
+      if (tabId === 'dashboard') {
+        initOrUpdateChart();
+        loadDailyProfitRecharts();
       }
+      if (tabId === 'transactions') loadTransactions();
+      if (tabId === 'customers') loadCustomers();
+      if (tabId === 'providers') loadProviders();
+      if (tabId === 'routing') loadRouting();
+      if (tabId === 'telegram') loadTelegramConfig();
     }
 
-    function renderAll() {
-      // 1. Stats
-      const s = globalData.stats;
-      document.getElementById('stat-total-balance').innerText = formatRupiah(s.totalAggregatorBalance);
-      document.getElementById('stat-today-revenue').innerText = formatRupiah(s.todayRevenue);
-      document.getElementById('stat-today-count').innerText = `${s.todayTransactions || 0} transaksi hari ini`;
-      document.getElementById('stat-profit').innerText = formatRupiah(s.totalProfit);
-
-      const total = s.totalTransactions || 0;
-      const rate = total > 0 ? Math.round((s.successCount / total) * 100) : 100;
-      document.getElementById('stat-success-rate').innerText = `${rate}%`;
-      document.getElementById('stat-tx-breakdown').innerHTML = `
-        <span class="text-emerald-400 font-medium">${s.successCount || 0} Sukses</span> • 
-        <span class="text-rose-400 font-medium">${s.failedCount || 0} Gagal</span> • 
-        <span class="text-amber-400 font-medium">${s.pendingCount || 0} Pending</span>
-      `;
-      document.getElementById('badge-tx-count').innerText = globalData.transactions.length;
-
-      // 2. Providers Cards
-      renderProviderCards();
-
-      // 3. Transactions Table
-      filterTransactions();
-
-      // 4. Products Table
-      renderProducts();
-
-      // 5. Test Options
-      populateTestDropdowns();
-
-      // 6. Dynamic domain display
-      const currentHost = window.location.origin;
-      document.getElementById('host-domain').innerText = currentHost;
-      document.getElementById('cfg-endpoint').value = `${currentHost}/api/v1`;
-      document.getElementById('wh-digi').value = `${currentHost}/api/webhook/digiflazz`;
-      document.getElementById('wh-tripay').value = `${currentHost}/api/webhook/tripay`;
-
-      renderChart();
-    }
-
-    function renderProviderCards() {
-      const container = document.getElementById('aggregator-cards-container');
-      const listContainer = document.getElementById('providers-list-container');
-      if (!container) return;
-
-      container.innerHTML = '';
-      if (listContainer) listContainer.innerHTML = '';
-
-      const p1 = globalData.providers.find(p => p.priorityOrder === 1);
-      const p2 = globalData.providers.find(p => p.priorityOrder === 2);
-      if (p1) document.getElementById('quick-p1').innerText = p1.name;
-      if (p2) document.getElementById('quick-p2').innerText = p2.name;
-
-      globalData.providers.forEach(p => {
-        // Mini Card on Dashboard
-        const card = document.createElement('div');
-        card.className = "glass p-4 rounded-xl border border-slate-800 relative";
-        card.innerHTML = `
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full ${p.isActive ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
-              <span class="font-bold text-xs text-white">${p.name}</span>
-              ${p.isPrimary ? '<span class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1 py-0.2 rounded font-bold">UTAMA</span>' : ''}
-              ${p.isSandbox ? '<span class="text-[9px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-1 py-0.2 rounded">SANDBOX</span>' : ''}
-            </div>
-            <button onclick="checkBalance('${p.id}')" class="text-slate-400 hover:text-emerald-400 text-xs p-1" title="Cek Saldo Realtime">
-              <i class="fa-solid fa-arrows-rotate"></i>
-            </button>
-          </div>
-          <div class="text-lg font-black text-white font-mono">${formatRupiah(p.balance)}</div>
-          <div class="text-[10px] text-slate-400 mt-1 truncate">${p.statusMessage || 'Siap'}</div>
-        `;
-        container.appendChild(card);
-
-        // Full Card on Providers Tab
-        if (listContainer) {
-          const fCard = document.createElement('div');
-          fCard.className = "glass p-5 rounded-2xl border border-slate-800 space-y-3";
-          fCard.innerHTML = `
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-black">
-                  #${p.priorityOrder || 1}
-                </div>
-                <div>
-                  <h4 class="font-bold text-sm text-white flex items-center gap-2">
-                    ${p.name}
-                    ${p.isPrimary ? '<span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold">JALUR UTAMA</span>' : ''}
-                  </h4>
-                  <p class="text-[11px] text-slate-400 font-mono truncate max-w-xs">${p.apiUrl}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-base font-black text-emerald-400 font-mono">${formatRupiah(p.balance)}</div>
-                <span class="text-[10px] ${p.isActive ? 'text-emerald-400' : 'text-slate-500'} font-bold">
-                  ${p.isActive ? '● AKTIF' : '○ NONAKTIF'}
-                </span>
-              </div>
-            </div>
-
-            <div class="p-3 bg-slate-900 rounded-xl font-mono text-[11px] space-y-1 text-slate-400 border border-slate-800">
-              <div class="flex justify-between"><span>Merchant / User:</span> <b class="text-slate-200">${p.apiUsername || '-'}</b></div>
-              <div class="flex justify-between"><span>API Key:</span> <span class="text-slate-500">${p.apiKey ? p.apiKey.substring(0, 8) + '••••••••' : '-'}</span></div>
-              <div class="flex justify-between"><span>Mode:</span> <b class="${p.isSandbox ? 'text-cyan-400' : 'text-emerald-400'}">${p.isSandbox ? 'Sandbox (Simulasi)' : 'Production (Live)'}</b></div>
-            </div>
-
-            <div class="flex items-center gap-2 pt-1">
-              <button onclick="checkBalance('${p.id}')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 border border-slate-700">
-                <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
-                <span>Cek Saldo</span>
-              </button>
-              <button onclick='openProviderModal(${JSON.stringify(p)})' class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            </div>
-          `;
-          listContainer.appendChild(fCard);
-        }
-      });
-    }
-
-    async function checkBalance(provId) {
-      try {
-        const res = await fetch(`/api/providers/${provId}/check-balance`, { method: 'POST' }).then(r => r.json());
-        alert(`Status Cek Saldo: ${res.message}\nSaldo Terkini: ${formatRupiah(res.balance)}`);
-        refreshData();
-      } catch (err) {
-        alert("Gagal menghubungi supplier: " + err.message);
-      }
-    }
-
-    // Filter & Render Transactions
-    function filterTransactions() {
-      const q = (document.getElementById('tx-search-input')?.value || '').toLowerCase();
-      const status = document.getElementById('tx-filter-status')?.value || 'ALL';
-      const tbody = document.getElementById('transactions-tbody');
-      if (!tbody) return;
-
-      tbody.innerHTML = '';
-      let list = globalData.transactions;
-
-      if (status !== 'ALL') list = list.filter(t => t.status === status);
-      if (q) list = list.filter(t => 
-        (t.destination && t.destination.includes(q)) ||
-        (t.id && t.id.toLowerCase().includes(q)) ||
-        (t.sn && t.sn.toLowerCase().includes(q)) ||
-        (t.productCode && t.productCode.toLowerCase().includes(q))
-      );
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-500 font-sans">Belum ada data transaksi yang sesuai filter.</td></tr>`;
+    // Portal Functions
+    function onPortalInputPhone() {
+      const val = document.getElementById('portal-destination').value.trim();
+      const badge = document.getElementById('portal-operator-badge');
+      if (val.length < 4) {
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-500"></span><span>Ketik Nomor</span>`;
+        badge.className = 'absolute right-3 top-2.5 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5';
         return;
       }
 
-      list.forEach(t => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-900/60 transition";
-        
-        let badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-        if (t.status === 'FAILED') badgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
-        if (t.status === 'PENDING') badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+      let op = "TELKOMSEL";
+      const clean = val.replace(/^\+62/, '0');
+      const p = clean.slice(0, 4);
 
-        const timeStr = t.date ? new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+      if (["0811", "0812", "0813", "0821", "0822", "0823", "0851", "0852", "0853"].includes(p)) op = "TELKOMSEL";
+      else if (["0814", "0815", "0816", "0855", "0856", "0857", "0858"].includes(p)) op = "INDOSAT";
+      else if (["0817", "0818", "0819", "0859", "0877", "0878"].includes(p)) op = "XL";
+      else if (["0831", "0832", "0838"].includes(p)) op = "AXIS";
+      else if (["0896", "0897", "0898", "0899"].includes(p)) op = "TRI";
+      else if (["0881", "0882", "0888"].includes(p)) op = "SMARTFREN";
+      else if (val.startsWith("14") || val.startsWith("5") || val.startsWith("32") || val.toUpperCase().includes("PLN")) op = "PLN";
 
-        tr.innerHTML = `
-          <td class="py-3 px-4 text-slate-400">${timeStr}</td>
-          <td class="py-3 px-4 text-slate-300 font-bold">${t.id}</td>
-          <td class="py-3 px-4 text-cyan-400 font-bold">${t.destination}</td>
-          <td class="py-3 px-4 text-slate-200">${t.productCode}</td>
-          <td class="py-3 px-4 text-slate-400 font-sans">${t.providerName || '-'}</td>
-          <td class="py-3 px-4 text-white">${formatRupiah(t.sellPrice)} <span class="text-emerald-400 text-[10px]">(+${formatRupiah(t.profit)})</span></td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded border text-[10px] font-bold ${badgeColor}">${t.status}</span></td>
-          <td class="py-3 px-4 text-slate-400 truncate max-w-[150px]" title="${t.sn || t.responseMessage}">${t.sn || t.responseMessage || '-'}</td>
-          <td class="py-3 px-4 text-center">
-            <button onclick='openDetailModal(${JSON.stringify(t)})' class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-sans text-[11px] transition">
-              Detail
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+      detectedOperator = op;
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>${op}</span>`;
+      badge.className = 'absolute right-3 top-2.5 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5';
+
+      renderPortalProducts();
+    }
+
+    function setPortalCategory(cat) {
+      currentCategory = cat;
+      ['pulsa', 'data', 'pln', 'emoney'].forEach(c => {
+        const btn = document.getElementById(`cat-btn-${c}`);
+        const isMatch = (c === 'emoney' && cat === 'E-MONEY') || c.toUpperCase() === cat;
+        if (btn) {
+          if (isMatch) {
+            btn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+          } else {
+            btn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition bg-slate-900 text-slate-400 border-slate-800 hover:text-white';
+          }
+        }
       });
+      renderPortalProducts();
     }
 
-    function openDetailModal(tx) {
-      document.getElementById('modal-tx-id').innerText = `${tx.id} - ${tx.productName || tx.productCode}`;
-      document.getElementById('modal-tx-meta').innerText = `Waktu: ${new Date(tx.date).toLocaleString('id-ID')} | Tujuan: ${tx.destination} | Provider: ${tx.providerName}`;
-      document.getElementById('modal-tx-failover').innerText = tx.failoverLog || "Direct primary route (Tanpa failover)";
-      document.getElementById('modal-tx-rawreq').innerText = tx.rawRequest || "{}";
-      document.getElementById('modal-tx-rawresp').innerText = tx.rawResponse || "{}";
-      document.getElementById('detail-modal').classList.remove('hidden');
+    function renderPortalProducts() {
+      const grid = document.getElementById('portal-products-grid');
+      let filtered = allProducts.filter(p => p.category === currentCategory);
+      if (currentCategory === 'PULSA' || currentCategory === 'DATA') {
+        filtered = filtered.filter(p => p.operator === detectedOperator);
+      }
+      if (filtered.length === 0) {
+        filtered = allProducts.filter(p => p.category === currentCategory);
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div onclick="selectPortalProduct('${p.code}')" id="prod-card-${p.code}" class="glass p-3.5 rounded-2xl border border-slate-800 hover:border-emerald-500/60 cursor-pointer transition flex flex-col justify-between group">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] font-mono font-bold text-slate-400 uppercase">${p.operator}</span>
+              <div class="text-xs font-bold text-white group-hover:text-emerald-400 transition">${p.name}</div>
+            </div>
+            <span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">${p.code}</span>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between pt-2 border-t border-slate-800/80">
+            <span class="text-[11px] text-slate-400">Harga:</span>
+            <span class="text-sm font-black text-emerald-400 font-mono">Rp ${p.sellPrice.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+      `).join('');
     }
 
-    function closeDetailModal() {
-      document.getElementById('detail-modal').classList.add('hidden');
-    }
+    function selectPortalProduct(code) {
+      selectedProduct = allProducts.find(p => p.code === code);
+      if (!selectedProduct) return;
 
-    // Products
-    function renderProducts() {
-      const tbody = document.getElementById('products-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      globalData.products.forEach(p => {
-        const profit = p.sellPrice - p.basePrice;
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-900/60";
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-bold text-cyan-400">${p.code}</td>
-          <td class="py-3 px-4 font-sans text-white">${p.name}</td>
-          <td class="py-3 px-4 text-slate-400 font-sans">${p.operator}</td>
-          <td class="py-3 px-4 text-slate-400">${formatRupiah(p.basePrice)}</td>
-          <td class="py-3 px-4 text-emerald-400 font-bold">${formatRupiah(p.sellPrice)}</td>
-          <td class="py-3 px-4 text-amber-400 font-bold">+${formatRupiah(profit)}</td>
-          <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">AKTIF</span></td>
-        `;
-        tbody.appendChild(tr);
+      allProducts.forEach(p => {
+        const el = document.getElementById(`prod-card-${p.code}`);
+        if (el) el.classList.remove('border-emerald-500', 'bg-emerald-950/20');
       });
+      const target = document.getElementById(`prod-card-${code}`);
+      if (target) target.classList.add('border-emerald-500', 'bg-emerald-950/20');
+
+      const dest = document.getElementById('portal-destination').value.trim();
+      document.getElementById('portal-checkout-box').classList.remove('hidden');
+      document.getElementById('portal-sel-name').innerText = selectedProduct.name;
+      document.getElementById('portal-sel-dest').innerText = dest || "Belum ada nomor tujuan";
+      document.getElementById('portal-sel-price').innerText = `Rp ${selectedProduct.sellPrice.toLocaleString('id-ID')}`;
     }
 
-    function populateTestDropdowns() {
-      const prodSelect = document.getElementById('test-product');
-      const provSelect = document.getElementById('test-provider');
-      if (!prodSelect || !provSelect) return;
+    async function executePortalCheckout() {
+      const dest = document.getElementById('portal-destination').value.trim();
+      if (!dest) {
+        alert("Mohon masukkan nomor HP atau nomor meter tujuan!");
+        return;
+      }
+      if (!selectedProduct) {
+        alert("Mohon pilih produk terlebih dahulu!");
+        return;
+      }
 
-      prodSelect.innerHTML = globalData.products.map(p => `<option value="${p.code}">${p.code} - ${p.name} (${formatRupiah(p.basePrice)})</option>`).join('');
-      provSelect.innerHTML = globalData.providers.filter(p => p.isActive).map(p => `<option value="${p.id}">${p.name} (${p.isSandbox ? 'Sandbox' : 'Live'})</option>`).join('');
-    }
+      const modal = document.getElementById('modal-qris');
+      const loading = document.getElementById('qris-loading');
+      const displayArea = document.getElementById('qris-display-area');
+      const successOverlay = document.getElementById('qris-success-overlay');
 
-    async function handleTestTrx(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit-test');
-      const box = document.getElementById('test-result-box');
-      const output = document.getElementById('test-result-json');
+      modal.classList.remove('hidden');
+      loading.classList.remove('hidden');
+      displayArea.classList.add('hidden');
+      successOverlay.classList.add('hidden');
 
-      const dest = document.getElementById('test-destination').value;
-      const prod = document.getElementById('test-product').value;
-
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menghubungi Provider H2H...`;
+      // Pre-fill labels
+      document.getElementById('qris-dest-label').innerText = dest;
+      document.getElementById('qris-product-label').innerText = selectedProduct.name;
+      document.getElementById('qris-amount-label').innerText = `Rp ${selectedProduct.sellPrice.toLocaleString('id-ID')}`;
+      document.getElementById('qris-invoice-label').innerText = 'Generating...';
 
       try {
-        const res = await fetch('/api/v1/transaksi', {
+        const res = await fetch('/api/qris/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             destination: dest,
-            product_code: prod,
-            token: "PROXMOX_PULSAPAY_SECURE_TOKEN_2026",
-            pin: "1234"
+            product_code: selectedProduct.code,
+            customer_name: "Customer Web Portal"
           })
-        }).then(r => r.json());
+        });
+        const data = await res.json();
+        if (!data.success || !data.invoice) {
+          throw new Error(data.error || "Gagal membuat invoice QRIS");
+        }
 
-        box.classList.remove('hidden');
-        output.innerText = JSON.stringify(res, null, 2);
-        refreshData();
+        activeQrisInvoice = data.invoice;
+
+        // Render QR Code image and metadata
+        const img = document.getElementById('qris-image');
+        img.src = activeQrisInvoice.qrDataUrl;
+        document.getElementById('qris-invoice-label').innerText = activeQrisInvoice.invoiceId;
+        document.getElementById('qris-dest-label').innerText = activeQrisInvoice.destination;
+        document.getElementById('qris-product-label').innerText = activeQrisInvoice.productName;
+        document.getElementById('qris-amount-label').innerText = `Rp ${activeQrisInvoice.amount.toLocaleString('id-ID')}`;
+
+        loading.classList.add('hidden');
+        displayArea.classList.remove('hidden');
+
+        startQrisCountdown(activeQrisInvoice.expiresAt);
+        startQrisPolling(activeQrisInvoice.invoiceId);
       } catch (err) {
-        alert("Error: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Test Transaksi Sekarang`;
+        alert("❌ Error: " + err.message);
+        closeQrisModal();
       }
     }
 
-    // Provider Config Modal
-    function openProviderModal(prov) {
-      document.getElementById('p-id').value = prov ? prov.id : '';
-      document.getElementById('p-name').value = prov ? prov.name : '';
-      document.getElementById('p-type').value = prov ? prov.type : 'DIGIFLAZZ';
-      document.getElementById('p-url').value = prov ? prov.apiUrl : 'https://api.digiflazz.com/v1';
-      document.getElementById('p-username').value = prov ? prov.apiUsername : '';
-      document.getElementById('p-key').value = prov ? prov.apiKey : '';
-      document.getElementById('p-pin').value = prov ? prov.secretOrPin : '';
-      document.getElementById('p-sandbox').checked = prov ? prov.isSandbox : true;
-      document.getElementById('p-active').checked = prov ? prov.isActive : true;
-      document.getElementById('prov-modal-title').innerText = prov ? `Edit ${prov.name}` : 'Tambah Agregator Baru';
-      document.getElementById('provider-modal').classList.remove('hidden');
+    function startQrisCountdown(expiresAt) {
+      if (qrisCountdownInterval) clearInterval(qrisCountdownInterval);
+
+      function updateDisplay() {
+        const remainingMs = Math.max(0, expiresAt - Date.now());
+        const totalSec = Math.floor(remainingMs / 1000);
+        const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
+        const secs = String(totalSec % 60).padStart(2, '0');
+
+        const el = document.getElementById('qris-timer-countdown');
+        if (el) el.innerText = `${mins}:${secs}`;
+
+        if (totalSec <= 0) {
+          clearInterval(qrisCountdownInterval);
+          if (el) el.innerText = "KEDALUWARSA";
+          alert("⚠️ Kode QRIS telah kedaluwarsa. Silakan lakukan checkout kembali.");
+          closeQrisModal();
+        }
+      }
+
+      updateDisplay();
+      qrisCountdownInterval = setInterval(updateDisplay, 1000);
+    }
+
+    function startQrisPolling(invoiceId) {
+      if (qrisPollInterval) clearInterval(qrisPollInterval);
+
+      qrisPollInterval = setInterval(async () => {
+        if (!activeQrisInvoice || activeQrisInvoice.invoiceId !== invoiceId) {
+          clearInterval(qrisPollInterval);
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/qris/${invoiceId}`);
+          const d = await res.json();
+          if (d.success && d.invoice) {
+            if (d.invoice.status === 'PAID') {
+              clearInterval(qrisPollInterval);
+              handleQrisPaymentSuccess(d.invoice, d.invoice.transactionResult);
+            } else if (d.invoice.status === 'EXPIRED') {
+              clearInterval(qrisPollInterval);
+              alert("⚠️ Kode QRIS telah kedaluwarsa.");
+              closeQrisModal();
+            }
+          }
+        } catch (e) {
+          console.warn("QRIS polling error:", e);
+        }
+      }, 2500);
+    }
+
+    async function triggerSimulatedScanPay(method) {
+      if (!activeQrisInvoice) return;
+      const btn = event?.currentTarget;
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+        btn.disabled = true;
+      }
+
+      try {
+        const res = await fetch('/api/qris/pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            invoiceId: activeQrisInvoice.invoiceId,
+            paymentMethod: method,
+            payerName: `User ${method}`
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          handleQrisPaymentSuccess(d.invoice, d.transaction);
+        } else {
+          alert("❌ Gagal memproses simulasi: " + (d.error || 'Terjadi kesalahan'));
+        }
+      } catch (e) {
+        alert("❌ Error: " + e.message);
+      } finally {
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function checkQrisStatusManual() {
+      if (!activeQrisInvoice) return;
+      const btn = document.getElementById('btn-check-qris');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/qris/${activeQrisInvoice.invoiceId}`);
+        const d = await res.json();
+        if (d.success && d.invoice) {
+          if (d.invoice.status === 'PAID') {
+            handleQrisPaymentSuccess(d.invoice, d.invoice.transactionResult);
+          } else {
+            alert(`ℹ️ Status: MENUNGGU PEMBAYARAN\n\nSilakan scan kode QRIS menggunakan e-wallet/m-banking Anda atau gunakan tombol simulasi instan.`);
+          }
+        }
+      } catch (e) {
+        alert("❌ Error: " + e.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    function handleQrisPaymentSuccess(invoice, tx) {
+      if (qrisPollInterval) clearInterval(qrisPollInterval);
+      if (qrisCountdownInterval) clearInterval(qrisCountdownInterval);
+
+      lastTrxResult = tx || {
+        destination: invoice.destination,
+        productName: invoice.productName,
+        price: invoice.amount,
+        sn: `SN-${Date.now()}`,
+        provider: "Kirana Pay Switching"
+      };
+
+      // Show success animation overlay inside modal
+      const overlay = document.getElementById('qris-success-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+
+      setTimeout(() => {
+        closeQrisModal();
+
+        // Render result card in Portal
+        document.getElementById('portal-result-card').classList.remove('hidden');
+        document.getElementById('res-time').innerText = new Date().toLocaleTimeString('id-ID');
+        document.getElementById('res-dest').innerText = invoice.destination;
+        document.getElementById('res-product').innerText = invoice.productName;
+        document.getElementById('res-provider').innerText = lastTrxResult.provider || lastTrxResult.providerName || "Telkomsel Direct DigiPOS";
+        document.getElementById('res-sn').innerText = lastTrxResult.sn || "SN-PENDING-SUCCESS";
+
+        // Scroll result into view
+        document.getElementById('portal-result-card').scrollIntoView({ behavior: 'smooth' });
+
+        refreshData();
+      }, 1400);
+    }
+
+    function copyQrisString() {
+      if (!activeQrisInvoice || !activeQrisInvoice.qrisString) {
+        alert("Kode QRIS belum tersedia.");
+        return;
+      }
+      navigator.clipboard.writeText(activeQrisInvoice.qrisString).then(() => {
+        alert("✅ Kode QRIS standar EMVCo berhasil disalin ke clipboard!\n\nString Payload:\n" + activeQrisInvoice.qrisString.slice(0, 80) + "...");
+      }).catch(() => {
+        prompt("Salin string QRIS EMVCo manual:", activeQrisInvoice.qrisString);
+      });
+    }
+
+    function copyInvoiceId() {
+      if (!activeQrisInvoice || !activeQrisInvoice.invoiceId) return;
+      navigator.clipboard.writeText(activeQrisInvoice.invoiceId).then(() => {
+        alert(`✅ Nomor Invoice ${activeQrisInvoice.invoiceId} berhasil disalin!`);
+      });
+    }
+
+    function downloadQrisImage() {
+      if (!activeQrisInvoice || !activeQrisInvoice.qrDataUrl) return;
+      const link = document.createElement('a');
+      link.href = activeQrisInvoice.qrDataUrl;
+      link.download = `QRIS_${activeQrisInvoice.invoiceId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function closeQrisModal() {
+      if (qrisPollInterval) clearInterval(qrisPollInterval);
+      if (qrisCountdownInterval) clearInterval(qrisCountdownInterval);
+      const modal = document.getElementById('modal-qris');
+      if (modal) modal.classList.add('hidden');
+      const overlay = document.getElementById('qris-success-overlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
+    function printCurrentStruk() {
+      if (!lastTrxResult) return;
+      document.getElementById('print-time').innerText = new Date().toLocaleString('id-ID');
+      document.getElementById('print-dest').innerText = lastTrxResult.destination || document.getElementById('res-dest').innerText;
+      document.getElementById('print-product').innerText = lastTrxResult.productName || document.getElementById('res-product').innerText;
+      document.getElementById('print-price').innerText = `Rp ${(lastTrxResult.price || 0).toLocaleString('id-ID')}`;
+      document.getElementById('print-sn').innerText = lastTrxResult.sn || "-";
+      document.getElementById('modal-receipt').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('modal-receipt').classList.add('hidden');
+    }
+
+    function resetPortalForm() {
+      document.getElementById('portal-destination').value = '';
+      document.getElementById('portal-checkout-box').classList.add('hidden');
+      document.getElementById('portal-result-card').classList.add('hidden');
+      selectedProduct = null;
+    }
+
+    // Refresh Data & Stats
+    async function refreshData() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('fa-spin');
+
+      try {
+        const [statsRes, prodRes] = await Promise.all([
+          fetch('/api/stats'),
+          fetch('/api/v1/produk')
+        ]);
+        const stats = await statsRes.json();
+        allProducts = await prodRes.json();
+        cachedStats = stats;
+
+        // Render Dashboard Stats
+        document.getElementById('stat-total-balance').innerText = `Rp ${(stats.totalBalance || 0).toLocaleString('id-ID')}`;
+        document.getElementById('stat-direct-balance').innerText = `Rp ${(stats.directBalance || 0).toLocaleString('id-ID')}`;
+        document.getElementById('stat-profit').innerText = `Rp ${(stats.todayProfit || stats.totalProfit || 0).toLocaleString('id-ID')}`;
+        document.getElementById('stat-cust-balance').innerText = `Rp ${(stats.totalCustomerBalance || 0).toLocaleString('id-ID')}`;
+
+        const qStats = stats.queueStats || {};
+        document.getElementById('widget-workers').innerText = `${qStats.activeWorkers || 0} / ${qStats.maxConcurrency || 50} Active`;
+        document.getElementById('widget-tps').innerText = `${(qStats.currentTps || 0).toFixed(1)} TPS`;
+        document.getElementById('widget-queue').innerText = `${qStats.queueLength || 0} req`;
+
+        document.getElementById('stat-current-tps').innerText = (qStats.currentTps || 0).toFixed(1);
+        document.getElementById('stat-peak-tps').innerText = `${qStats.peakTps || 0} TPS`;
+
+        document.getElementById('stat-count-success').innerText = `${stats.successCount || 0} Sukses`;
+        document.getElementById('stat-count-failed').innerText = `${stats.failedCount || 0} Gagal`;
+
+        renderPortalProducts();
+        loadProviders();
+        if (currentTab === 'dashboard') {
+          loadDailyProfitRecharts();
+        }
+      } catch (err) {
+        console.error("Refresh error:", err);
+      } finally {
+        if (icon) icon.classList.remove('fa-spin');
+      }
+    }
+
+    // Providers Management State & Logic
+    let allProvidersList = [];
+    let currentProviderFilterCategory = 'ALL';
+
+    async function loadProviders() {
+      try {
+        const res = await fetch('/api/providers');
+        const providers = await res.json();
+        allProvidersList = providers || [];
+
+        // Summary badge in tab header
+        const sumBadge = document.getElementById('provider-count-summary');
+        if (sumBadge) {
+          const activeCount = allProvidersList.filter(p => p.isActive).length;
+          sumBadge.innerText = `${activeCount} Aktif / ${allProvidersList.length} Total Supplier`;
+        }
+
+        // Mini cards on Overview Tab
+        const container = document.getElementById('providers-cards-container');
+        if (container) {
+          container.innerHTML = allProvidersList.map(p => `
+            <div class="glass p-4 rounded-2xl border ${p.category === 'DIRECT_TELCO' ? 'border-cyan-500/30 bg-cyan-950/10' : 'border-slate-800'} space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded ${p.category === 'DIRECT_TELCO' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-800 text-slate-400'}">${p.category === 'DIRECT_TELCO' ? 'Direct Telco' : 'Agregator'}</span>
+                <span class="text-[10px] ${p.isActive ? 'text-emerald-400' : 'text-slate-500'} font-mono flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${p.isActive ? 'bg-emerald-400' : 'bg-slate-600'}"></span> ${p.isActive ? 'Aktif' : 'Nonaktif'}
+                </span>
+              </div>
+              <div class="font-bold text-xs text-white truncate">${p.name}</div>
+              <div class="text-sm font-black font-mono text-emerald-400">Rp ${(p.balance || 0).toLocaleString('id-ID')}</div>
+              <button onclick="checkProviderBalance('${p.id}')" class="w-full mt-2 py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-arrows-rotate"></i> Cek Saldo Real-time
+              </button>
+            </div>
+          `).join('');
+        }
+
+        renderFilteredProviders();
+      } catch (e) {
+        console.error("Load providers error:", e);
+      }
+    }
+
+    function filterProvidersByCategory(cat) {
+      currentProviderFilterCategory = cat;
+      const btnAll = document.getElementById('btn-filter-prov-all');
+      const btnDirect = document.getElementById('btn-filter-prov-direct');
+      const btnAgg = document.getElementById('btn-filter-prov-agg');
+
+      const activeCls = 'px-3 py-1.5 rounded-lg font-bold bg-cyan-500 text-slate-950 text-[11px] transition whitespace-nowrap shadow-md';
+      const inactiveCls = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-[11px] transition whitespace-nowrap';
+
+      if (btnAll) btnAll.className = cat === 'ALL' ? activeCls : inactiveCls;
+      if (btnDirect) btnDirect.className = cat === 'DIRECT_TELCO' ? activeCls : inactiveCls;
+      if (btnAgg) btnAgg.className = cat === 'AGGREGATOR' ? activeCls : inactiveCls;
+
+      renderFilteredProviders();
+    }
+
+    function renderFilteredProviders() {
+      const fullList = document.getElementById('all-providers-list');
+      if (!fullList) return;
+
+      const q = (document.getElementById('prov-search-input')?.value || '').toLowerCase().trim();
+      let filtered = allProvidersList;
+
+      if (currentProviderFilterCategory !== 'ALL') {
+        filtered = filtered.filter(p => p.category === currentProviderFilterCategory);
+      }
+
+      if (q) {
+        filtered = filtered.filter(p =>
+          (p.name && p.name.toLowerCase().includes(q)) ||
+          (p.id && p.id.toLowerCase().includes(q)) ||
+          (p.apiUrl && p.apiUrl.toLowerCase().includes(q)) ||
+          (p.type && p.type.toLowerCase().includes(q)) ||
+          ((p.supportedOperators || []).join(' ').toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        fullList.innerHTML = `
+          <div class="col-span-full p-8 text-center glass rounded-2xl border border-slate-800 text-slate-400 space-y-2">
+            <i class="fa-solid fa-server text-3xl text-slate-600"></i>
+            <div class="text-sm font-semibold text-slate-300">Tidak ada supplier yang cocok</div>
+            <p class="text-xs text-slate-500">Silakan ubah filter pencarian atau klik tombol "Tambah Supplier Baru".</p>
+          </div>
+        `;
+        return;
+      }
+
+      fullList.innerHTML = filtered.map(p => `
+        <div class="glass p-5 rounded-2xl border ${p.isActive ? 'border-slate-800 hover:border-slate-700' : 'border-slate-800/50 opacity-70'} space-y-3.5 transition">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[9px] font-bold ${p.category === 'DIRECT_TELCO' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'} px-2 py-0.5 rounded font-mono uppercase">
+                  ${p.category === 'DIRECT_TELCO' ? '⚡ Direct Telco' : '🌐 Agregator H2H'}
+                </span>
+                <span class="text-[9px] px-2 py-0.5 rounded font-mono ${p.isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-slate-800 text-slate-400'}">
+                  ${p.isActive ? 'AKTIF' : 'NONAKTIF'}
+                </span>
+                ${p.isSandbox ? '<span class="text-[9px] bg-sky-500/10 text-sky-400 px-1.5 py-0.5 rounded font-mono">Sandbox</span>' : ''}
+              </div>
+              <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                <span>${p.name}</span>
+                <span class="text-[10px] text-slate-500 font-mono font-normal">(${p.id})</span>
+              </h4>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] text-slate-400">Saldo Deposit H2H</div>
+              <div class="text-base font-black text-emerald-400 font-mono">Rp ${(p.balance || 0).toLocaleString('id-ID')}</div>
+            </div>
+          </div>
+
+          <!-- Specs Info -->
+          <div class="text-xs text-slate-300 font-mono bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 space-y-1.5">
+            <div class="flex items-center justify-between truncate">
+              <span class="text-slate-500">API URL:</span>
+              <span class="text-slate-300 font-sans truncate max-w-[260px] text-[11px]">${p.apiUrl}</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Tipe / Engine:</span>
+              <span class="text-cyan-400 font-bold">${p.type || 'Universal REST'}</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Operator Didukung:</span>
+              <span class="text-amber-400">${(p.supportedOperators || ['ALL']).join(', ')}</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-900">
+              <span class="text-slate-500">Status Gateway:</span>
+              <span class="${p.isActive ? 'text-emerald-400' : 'text-slate-500'} font-sans font-medium text-[10px]">${p.statusMessage || 'Siap Melayani Permintaan'}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div class="flex items-center gap-2">
+              <button onclick="toggleProviderActive('${p.id}')" title="Klik untuk mengaktifkan/menonaktifkan supplier" class="px-2.5 py-1.5 ${p.isActive ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} rounded-lg text-[11px] font-bold transition flex items-center gap-1.5">
+                <i class="fa-solid ${p.isActive ? 'fa-pause' : 'fa-play'}"></i>
+                <span>${p.isActive ? 'Nonaktifkan' : 'Aktifkan'}</span>
+              </button>
+              <button onclick="openEditProviderModal('${p.id}')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-bold border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                <span>Edit</span>
+              </button>
+              <button onclick="deleteProvider('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="px-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-[11px] transition" title="Hapus Supplier">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+            <button onclick="checkProviderBalance('${p.id}')" class="px-3 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-bold rounded-lg transition flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+              <span>Cek Saldo</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Modal Add / Edit Provider Handlers
+    function openAddProviderModal() {
+      document.getElementById('modal-provider-title').innerText = 'Tambah Supplier / Provider Baru';
+      document.getElementById('prov-form-mode').value = 'add';
+      document.getElementById('prov-form-id').value = '';
+      document.getElementById('btn-save-provider-text').innerText = 'Simpan Supplier Baru';
+
+      // Reset form defaults
+      document.getElementById('prov-form-name').value = '';
+      document.getElementById('prov-form-category').value = 'AGGREGATOR';
+      document.getElementById('prov-form-type').value = 'AGGREGATOR_CUSTOM';
+      document.getElementById('prov-form-operators').value = 'ALL';
+      document.getElementById('prov-form-apiurl').value = 'https://api.namaprovider.com/v1';
+      document.getElementById('prov-form-username').value = '';
+      document.getElementById('prov-form-apikey').value = '';
+      document.getElementById('prov-form-pin').value = '';
+      document.getElementById('prov-form-outletid').value = '';
+      document.getElementById('prov-form-balance').value = '2500000';
+      document.getElementById('prov-form-active').checked = true;
+      document.getElementById('prov-form-sandbox').checked = true;
+
+      document.getElementById('modal-provider').classList.remove('hidden');
+    }
+
+    function openEditProviderModal(id) {
+      const p = allProvidersList.find(item => item.id === id);
+      if (!p) {
+        alert("Supplier tidak ditemukan");
+        return;
+      }
+
+      document.getElementById('modal-provider-title').innerText = `Edit Supplier: ${p.name}`;
+      document.getElementById('prov-form-mode').value = 'edit';
+      document.getElementById('prov-form-id').value = p.id;
+      document.getElementById('btn-save-provider-text').innerText = 'Simpan Perubahan';
+
+      document.getElementById('prov-form-name').value = p.name || '';
+      document.getElementById('prov-form-category').value = p.category || 'AGGREGATOR';
+      document.getElementById('prov-form-type').value = p.type || 'AGGREGATOR_CUSTOM';
+      document.getElementById('prov-form-operators').value = (p.supportedOperators || ['ALL']).join(', ');
+      document.getElementById('prov-form-apiurl').value = p.apiUrl || '';
+      document.getElementById('prov-form-username').value = p.apiUsername || '';
+      document.getElementById('prov-form-apikey').value = p.apiKey || '';
+      document.getElementById('prov-form-pin').value = p.secretOrPin || '';
+      document.getElementById('prov-form-outletid').value = p.outletId || '';
+      document.getElementById('prov-form-balance').value = p.balance || 0;
+      document.getElementById('prov-form-active').checked = p.isActive !== false;
+      document.getElementById('prov-form-sandbox').checked = p.isSandbox !== false;
+
+      document.getElementById('modal-provider').classList.remove('hidden');
     }
 
     function closeProviderModal() {
-      document.getElementById('provider-modal').classList.add('hidden');
+      document.getElementById('modal-provider').classList.add('hidden');
     }
 
-    async function saveProvider(e) {
-      e.preventDefault();
-      const pData = {
-        id: document.getElementById('p-id').value || undefined,
-        name: document.getElementById('p-name').value,
-        type: document.getElementById('p-type').value,
-        apiUrl: document.getElementById('p-url').value,
-        apiUsername: document.getElementById('p-username').value,
-        apiKey: document.getElementById('p-key').value,
-        secretOrPin: document.getElementById('p-pin').value,
-        isSandbox: document.getElementById('p-sandbox').checked,
-        isActive: document.getElementById('p-active').checked
-      };
-
-      try {
-        await fetch('/api/providers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(pData)
-        });
-        closeProviderModal();
-        refreshData();
-      } catch (err) {
-        alert("Gagal menyimpan: " + err.message);
+    function handleCategoryChange() {
+      const cat = document.getElementById('prov-form-category').value;
+      const typeSelect = document.getElementById('prov-form-type');
+      if (cat === 'DIRECT_TELCO') {
+        typeSelect.value = 'TELKOMSEL_DIRECT';
+        document.getElementById('prov-form-operators').value = 'TELKOMSEL';
+      } else {
+        typeSelect.value = 'AGGREGATOR_CUSTOM';
+        document.getElementById('prov-form-operators').value = 'ALL';
       }
     }
 
-    function copyToClipboard(elementId) {
-      const el = document.getElementById(elementId);
-      el.select();
-      navigator.clipboard.writeText(el.value);
-      alert("Tersalin ke clipboard!");
+    async function submitProviderForm() {
+      const name = document.getElementById('prov-form-name').value.trim();
+      const category = document.getElementById('prov-form-category').value;
+      const type = document.getElementById('prov-form-type').value;
+      const operatorsStr = document.getElementById('prov-form-operators').value.trim();
+      const apiUrl = document.getElementById('prov-form-apiurl').value.trim();
+      const apiUsername = document.getElementById('prov-form-username').value.trim();
+      const apiKey = document.getElementById('prov-form-apikey').value.trim();
+      const secretOrPin = document.getElementById('prov-form-pin').value.trim();
+      const outletId = document.getElementById('prov-form-outletid').value.trim();
+      const balance = parseInt(document.getElementById('prov-form-balance').value, 10) || 0;
+      const isActive = document.getElementById('prov-form-active').checked;
+      const isSandbox = document.getElementById('prov-form-sandbox').checked;
+      const formId = document.getElementById('prov-form-id').value;
+
+      if (!name || !apiUrl || !apiKey) {
+        alert("Mohon lengkapi Nama Supplier, Endpoint API URL, dan API Key!");
+        return;
+      }
+
+      const saveBtn = document.getElementById('btn-save-provider');
+      const origText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      saveBtn.disabled = true;
+
+      const payload = {
+        id: formId || undefined,
+        name,
+        category,
+        type,
+        supportedOperators: operatorsStr || 'ALL',
+        apiUrl,
+        apiUsername,
+        apiKey,
+        secretOrPin,
+        outletId,
+        balance,
+        isActive,
+        isSandbox
+      };
+
+      try {
+        const res = await fetch('/api/providers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.success) {
+          alert(`✅ Berhasil! ${d.message}`);
+          closeProviderModal();
+          await loadProviders();
+          refreshData();
+        } else {
+          alert(`❌ Gagal: ${d.error || 'Terjadi kesalahan sistem'}`);
+        }
+      } catch (err) {
+        alert(`❌ Error menghubungi server: ${err.message}`);
+      } finally {
+        saveBtn.innerHTML = origText;
+        saveBtn.disabled = false;
+      }
     }
 
-    // Chart.js Setup
-    function renderChart() {
+    async function toggleProviderActive(id) {
+      try {
+        const res = await fetch(`/api/providers/${id}/toggle`, { method: 'POST' });
+        const d = await res.json();
+        if (d.success) {
+          await loadProviders();
+          refreshData();
+        } else {
+          alert(d.error || "Gagal mengubah status supplier.");
+        }
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function deleteProvider(id, name) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus supplier "${name}" (${id})?\n\nPerhatian: Supplier ini tidak akan digunakan lagi dalam routing transaksi.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/providers/${id}`, { method: 'DELETE' });
+        const d = await res.json();
+        if (d.success) {
+          alert(`✅ ${d.message}`);
+          await loadProviders();
+          refreshData();
+        } else {
+          alert(`❌ Gagal menghapus: ${d.error || 'Terjadi kesalahan'}`);
+        }
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function checkProviderBalance(id) {
+      try {
+        const res = await fetch(`/api/providers/${id}/check-balance`, { method: 'POST' });
+        const d = await res.json();
+        alert(d.message || "Saldo diperbarui!");
+        refreshData();
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    // Load Transactions
+    async function loadTransactions() {
+      try {
+        const res = await fetch('/api/transactions?limit=50');
+        const list = await res.json();
+        cachedTransactions = list;
+        renderTransactionsTable(list);
+        document.getElementById('badge-tx-count').innerText = list.length;
+      } catch (e) {
+        console.error("Load tx error:", e);
+      }
+    }
+
+    function renderTransactionsTable(list) {
+      const tbody = document.getElementById('transactions-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = list.map(t => `
+        <tr class="hover:bg-slate-900/50 transition">
+          <td class="py-2.5 px-4 text-slate-400 text-[11px]">${new Date(t.date).toLocaleTimeString('id-ID')}</td>
+          <td class="py-2.5 px-4 text-white text-[11px] font-sans">${t.customerName || 'Web Retail'}</td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">${t.destination}</td>
+          <td class="py-2.5 px-4 text-slate-300">${t.productCode}</td>
+          <td class="py-2.5 px-4 text-cyan-400 text-[11px] font-sans">${t.providerName || '-'}</td>
+          <td class="py-2.5 px-4 text-slate-200">Rp ${(t.sellPrice || 0).toLocaleString('id-ID')}</td>
+          <td class="py-2.5 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.status === 'SUCCESS' ? 'bg-emerald-500/20 text-emerald-400' : t.status === 'PENDING' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${t.status}</span>
+          </td>
+          <td class="py-2.5 px-4 text-[10px] text-slate-400 max-w-xs truncate">${t.sn || t.responseMessage || '-'}</td>
+          <td class="py-2.5 px-4 text-center">
+            <button onclick="retryTransaction('${t.id}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px]">Retry</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTransactions() {
+      const q = document.getElementById('tx-search-input').value.toLowerCase();
+      const st = document.getElementById('tx-filter-status').value;
+      let f = cachedTransactions;
+      if (st !== 'ALL') f = f.filter(t => t.status === st);
+      if (q) f = f.filter(t => (t.destination && t.destination.includes(q)) || (t.id && t.id.toLowerCase().includes(q)) || (t.sn && t.sn.toLowerCase().includes(q)));
+      renderTransactionsTable(f);
+    }
+
+    async function retryTransaction(id) {
+      try {
+        const res = await fetch('/api/transactions/retry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const d = await res.json();
+        alert(d.result ? "Retry berhasil: " + d.result.message : "Gagal retry");
+        loadTransactions();
+      } catch (e) {
+        alert("Retry error: " + e.message);
+      }
+    }
+
+    // Load Customers
+    async function loadCustomers() {
+      try {
+        const res = await fetch('/api/customers');
+        const customers = await res.json();
+        const tbody = document.getElementById('customers-tbody');
+        if (tbody) {
+          tbody.innerHTML = customers.map(c => `
+            <tr class="hover:bg-slate-900/50 transition">
+              <td class="py-2.5 px-4 font-mono text-[11px] text-slate-400">${c.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white text-xs">${c.name}</div>
+                <div class="text-[10px] text-slate-400 font-mono">${c.phone}</div>
+              </td>
+              <td class="py-2.5 px-4">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.tier === 'H2H_API' ? 'bg-purple-500/20 text-purple-400' : c.tier === 'GOLD_PARTNER' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-300'}">${c.tier}</span>
+              </td>
+              <td class="py-2.5 px-4 font-mono font-bold text-emerald-400">Rp ${(c.balance || 0).toLocaleString('id-ID')}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-300">${c.totalTransactions || 0}</td>
+              <td class="py-2.5 px-4 font-mono text-[10px] text-cyan-400 truncate max-w-[120px]">${c.apiKey || '-'}</td>
+              <td class="py-2.5 px-4 text-center">
+                <button onclick="openDepositModal('${c.id}', '${c.name}')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded-lg text-xs font-bold transition">Deposit</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error("Load customers error:", e);
+      }
+    }
+
+    function openDepositModal(id, name) {
+      document.getElementById('deposit-cust-id').value = id;
+      document.getElementById('deposit-cust-name').innerText = `Customer: ${name} (${id})`;
+      document.getElementById('deposit-amount').value = '';
+      document.getElementById('modal-deposit').classList.remove('hidden');
+    }
+
+    function closeDepositModal() {
+      document.getElementById('modal-deposit').classList.add('hidden');
+    }
+
+    function openAddCustomerModal() {
+      document.getElementById('new-cust-name').value = '';
+      document.getElementById('new-cust-phone').value = '';
+      document.getElementById('new-cust-tier').value = 'RETAIL';
+      document.getElementById('new-cust-balance').value = '250000';
+      document.getElementById('modal-customer').classList.remove('hidden');
+    }
+
+    function closeAddCustomerModal() {
+      document.getElementById('modal-customer').classList.add('hidden');
+    }
+
+    async function submitNewCustomer() {
+      const name = document.getElementById('new-cust-name').value.trim();
+      const phone = document.getElementById('new-cust-phone').value.trim();
+      const tier = document.getElementById('new-cust-tier').value;
+      const balance = parseInt(document.getElementById('new-cust-balance').value, 10) || 0;
+
+      if (!name || !phone) {
+        alert("Nama dan No HP customer wajib diisi!");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            phone,
+            tier,
+            balance,
+            apiKey: `API_KEY_${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          alert("✅ Customer berhasil didaftarkan!");
+          closeAddCustomerModal();
+          loadCustomers();
+          refreshData();
+        } else {
+          alert("❌ Gagal mendaftarkan customer: " + (d.error || 'Terjadi kesalahan'));
+        }
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    async function submitDeposit() {
+      const id = document.getElementById('deposit-cust-id').value;
+      const amt = document.getElementById('deposit-amount').value;
+      if (!amt || parseInt(amt, 10) <= 0) {
+        alert("Nominal tidak valid!");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/customers/${id}/deposit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amt })
+        });
+        const d = await res.json();
+        alert(d.message || "Deposit sukses!");
+        closeDepositModal();
+        loadCustomers();
+        refreshData();
+      } catch (e) {
+        alert("Error deposit: " + e.message);
+      }
+    }
+
+    // Load Routing
+    async function loadRouting() {
+      try {
+        const res = await fetch('/api/routing');
+        const rules = await res.json();
+        const container = document.getElementById('routing-rules-container');
+        if (container) {
+          container.innerHTML = rules.map(r => `
+            <div class="glass p-4 rounded-2xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-xs text-white">${r.name}</div>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">AKTIF</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono">Prefix: ${(r.prefixes || []).join(', ')}</div>
+              <div class="flex items-center gap-2 text-xs font-mono pt-1">
+                <span class="text-cyan-400">Jalur Utama: <b>${r.primaryProviderId}</b></span>
+                <i class="fa-solid fa-arrow-right text-slate-600 text-[10px]"></i>
+                <span class="text-slate-400">Backup: ${(r.backupProviderIds || []).join(' -> ')}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error("Load routing error:", e);
+      }
+    }
+
+    // Load Simulator
+    async function runLoadSimulation(count) {
+      const box = document.getElementById('sim-progress-box');
+      const bar = document.getElementById('sim-progress-bar');
+      box.classList.remove('hidden');
+      bar.style.width = '30%';
+      document.getElementById('sim-status-text').innerText = `Mengirimkan ${count} transaksi simultan...`;
+
+      try {
+        const res = await fetch('/api/v1/simulate-load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count, concurrency: 50 })
+        });
+        const d = await res.json();
+        bar.style.width = '100%';
+        document.getElementById('sim-status-text').innerText = `Selesai! ${d.successCount} transaksi sukses diproses paralel.`;
+        document.getElementById('sim-tps-metric').innerText = `${d.effectiveTps} TPS Efektif`;
+
+        document.getElementById('sim-total-tx').innerText = d.totalSimulated;
+        document.getElementById('sim-success-tx').innerText = d.successCount;
+        document.getElementById('sim-duration-tx').innerText = `${d.durationMs} ms`;
+        document.getElementById('sim-rate-tx').innerText = `${d.effectiveTps} TPS`;
+
+        refreshData();
+      } catch (e) {
+        alert("Simulation error: " + e.message);
+      }
+    }
+
+    // Chart.js
+    function initOrUpdateChart() {
       const ctx = document.getElementById('trxChart');
       if (!ctx) return;
-
-      if (chartInstance) chartInstance.destroy();
-
-      const hours = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
-      const counts = [3, 8, 14, 9, 12, 18, 15];
-
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
       chartInstance = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
-          labels: hours,
+          labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Sekarang'],
           datasets: [{
-            label: 'Volume Transaksi Sukses',
-            data: counts,
-            backgroundColor: 'rgba(16, 185, 129, 0.4)',
+            label: 'Transaksi Sukses',
+            data: [12, 19, 45, 120, 185, 240, 290],
             borderColor: '#10b981',
-            borderWidth: 2,
-            borderRadius: 6
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4
+          }, {
+            label: 'Direct Telco (TSEL/ISAT/XL)',
+            data: [8, 15, 38, 95, 140, 190, 230],
+            borderColor: '#06b6d4',
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } } } },
           scales: {
-            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
           }
         }
       });
     }
 
-    // Init & Auto Refresh
-    refreshData();
-    setInterval(refreshData, 5000);
+    // -------------------------------------------------------------
+    // RECHARTS DAILY PROFIT ANALYTICS ENGINE
+    // -------------------------------------------------------------
+    let currentProfitDays = 7;
+    let currentProfitChartType = 'area';
+    let dailyProfitData = [];
+    let rechartsRootInstance = null;
+
+    function setProfitDays(days) {
+      currentProfitDays = days;
+      [7, 14, 30].forEach(d => {
+        const btn = document.getElementById(`btn-days-${d}`);
+        if (btn) {
+          if (d === days) {
+            btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-emerald-500 text-slate-950 transition text-[11px]';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px]';
+          }
+        }
+      });
+      loadDailyProfitRecharts();
+    }
+
+    function setProfitChartType(type) {
+      currentProfitChartType = type;
+      const btnArea = document.getElementById('btn-type-area');
+      const btnBar = document.getElementById('btn-type-bar');
+      if (btnArea && btnBar) {
+        if (type === 'area') {
+          btnArea.className = 'px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30 transition text-[11px] flex items-center gap-1.5';
+          btnBar.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px] flex items-center gap-1.5';
+        } else {
+          btnBar.className = 'px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30 transition text-[11px] flex items-center gap-1.5';
+          btnArea.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition text-[11px] flex items-center gap-1.5';
+        }
+      }
+      renderRechartsDailyProfit();
+    }
+
+    async function loadDailyProfitRecharts() {
+      try {
+        const res = await fetch(`/api/stats/daily-profit?days=${currentProfitDays}`);
+        const result = await res.json();
+        dailyProfitData = result.data || [];
+        const summary = result.summary || {};
+
+        // Update KPI summary cards
+        const totalProfitEl = document.getElementById('kpi-total-profit');
+        const totalRevEl = document.getElementById('kpi-total-rev');
+        const avgProfitEl = document.getElementById('kpi-avg-profit');
+        const peakProfitEl = document.getElementById('kpi-peak-profit');
+        const peakDateEl = document.getElementById('kpi-peak-date');
+
+        if (totalProfitEl) totalProfitEl.innerText = `Rp ${(summary.totalProfit || 0).toLocaleString('id-ID')}`;
+        if (totalRevEl) totalRevEl.innerText = `Rp ${(summary.totalRevenue || 0).toLocaleString('id-ID')}`;
+        if (avgProfitEl) avgProfitEl.innerText = `Rp ${(summary.avgDailyProfit || 0).toLocaleString('id-ID')} / hr`;
+        if (peakProfitEl) peakProfitEl.innerText = `Rp ${(summary.highestProfitDay?.profit || 0).toLocaleString('id-ID')}`;
+        if (peakDateEl) peakDateEl.innerText = summary.highestProfitDay ? `${summary.highestProfitDay.displayDate}` : '-';
+
+        renderRechartsDailyProfit();
+      } catch (err) {
+        console.error("Gagal memuat data Recharts Daily Profit:", err);
+      }
+    }
+
+    function renderRechartsDailyProfit() {
+      const container = document.getElementById('recharts-profit-container');
+      if (!container) return;
+
+      if (!window.Recharts || !window.React || !window.ReactDOM) {
+        container.innerHTML = '<div class="text-xs text-rose-400 p-4 text-center font-mono">Modul Recharts sedang dimuat...</div>';
+        setTimeout(renderRechartsDailyProfit, 500);
+        return;
+      }
+
+      const {
+        ResponsiveContainer,
+        AreaChart, Area,
+        BarChart, Bar,
+        XAxis, YAxis,
+        CartesianGrid,
+        Tooltip,
+        Legend
+      } = window.Recharts;
+
+      // Custom Tooltip component in React
+      const CustomProfitTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+          const item = payload[0].payload;
+          return React.createElement('div', {
+            className: 'p-3 bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans space-y-1.5 min-w-[200px]'
+          },
+            React.createElement('div', { className: 'font-bold text-white border-b border-slate-800 pb-1 flex items-center justify-between' },
+              React.createElement('span', null, item.displayDate),
+              React.createElement('span', { className: 'text-[10px] text-slate-400 font-mono' }, item.date)
+            ),
+            React.createElement('div', { className: 'flex justify-between items-center text-emerald-400 font-bold' },
+              React.createElement('span', null, 'Laba Bersih:'),
+              React.createElement('span', { className: 'font-mono' }, 'Rp ' + Number(item.profit).toLocaleString('id-ID'))
+            ),
+            React.createElement('div', { className: 'flex justify-between items-center text-cyan-300' },
+              React.createElement('span', null, 'Total Omset:'),
+              React.createElement('span', { className: 'font-mono' }, 'Rp ' + Number(item.revenue).toLocaleString('id-ID'))
+            ),
+            React.createElement('div', { className: 'flex justify-between items-center text-slate-300' },
+              React.createElement('span', null, 'Trx Sukses:'),
+              React.createElement('span', { className: 'font-mono font-bold' }, item.transactions + ' trx')
+            ),
+            React.createElement('div', { className: 'flex justify-between items-center text-amber-400 text-[11px]' },
+              React.createElement('span', null, 'Margin Keuntungan:'),
+              React.createElement('span', { className: 'font-mono font-bold' }, item.margin + '%')
+            )
+          );
+        }
+        return null;
+      };
+
+      const isBar = currentProfitChartType === 'bar';
+
+      const chartChildren = [
+        React.createElement('defs', { key: 'defs' },
+          React.createElement('linearGradient', { id: 'profitAreaGradient', x1: '0', y1: '0', x2: '0', y2: '1' },
+            React.createElement('stop', { offset: '5%', stopColor: '#10b981', stopOpacity: 0.5 }),
+            React.createElement('stop', { offset: '95%', stopColor: '#10b981', stopOpacity: 0.0 })
+          )
+        ),
+        React.createElement(CartesianGrid, { key: 'grid', strokeDasharray: '3 3', stroke: '#1e293b', vertical: false }),
+        React.createElement(XAxis, {
+          key: 'xaxis',
+          dataKey: 'displayDate',
+          stroke: '#64748b',
+          fontSize: 11,
+          tickLine: false,
+          axisLine: { stroke: '#334155' }
+        }),
+        React.createElement(YAxis, {
+          key: 'yaxis',
+          stroke: '#64748b',
+          fontSize: 11,
+          tickLine: false,
+          axisLine: false,
+          tickFormatter: (val) => {
+            if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(1) + 'jt';
+            if (val >= 1000) return 'Rp ' + (val / 1000).toFixed(0) + 'rb';
+            return 'Rp ' + val;
+          }
+        }),
+        React.createElement(Tooltip, { key: 'tooltip', content: React.createElement(CustomProfitTooltip) }),
+        React.createElement(Legend, {
+          key: 'legend',
+          wrapperStyle: { paddingTop: '8px', fontSize: '11px' },
+          formatter: () => React.createElement('span', { style: { color: '#34d399', fontWeight: 700 } }, 'Laba Bersih Harian (Net Profit)')
+        })
+      ];
+
+      if (isBar) {
+        chartChildren.push(
+          React.createElement(Bar, {
+            key: 'bar',
+            dataKey: 'profit',
+            fill: '#10b981',
+            radius: [6, 6, 0, 0],
+            maxBarSize: 42,
+            name: 'profit'
+          })
+        );
+      } else {
+        chartChildren.push(
+          React.createElement(Area, {
+            key: 'area',
+            type: 'monotone',
+            dataKey: 'profit',
+            stroke: '#10b981',
+            strokeWidth: 2.5,
+            fillOpacity: 1,
+            fill: 'url(#profitAreaGradient)',
+            name: 'profit',
+            dot: { r: 4, fill: '#10b981', stroke: '#0f172a', strokeWidth: 2 },
+            activeDot: { r: 6, fill: '#34d399', stroke: '#fff', strokeWidth: 2 }
+          })
+        );
+      }
+
+      const chartElement = React.createElement(ResponsiveContainer, { width: '100%', height: '100%' },
+        React.createElement(isBar ? BarChart : AreaChart, {
+          data: dailyProfitData,
+          margin: { top: 15, right: 20, left: 10, bottom: 5 }
+        }, chartChildren)
+      );
+
+      if (!rechartsRootInstance) {
+        rechartsRootInstance = ReactDOM.createRoot(container);
+      }
+      rechartsRootInstance.render(chartElement);
+    }
+
+    // Telegram Bot Management
+    async function loadTelegramConfig() {
+      try {
+        const res = await fetch('/api/telegram/config');
+        const tg = await res.json();
+
+        const sw = document.getElementById('tg-enable-switch');
+        const tokenInput = document.getElementById('tg-bot-token');
+        const chatInput = document.getElementById('tg-chat-id');
+        const nSuccess = document.getElementById('tg-notify-success');
+        const nFailed = document.getElementById('tg-notify-failed');
+        const badge = document.getElementById('badge-tg-status');
+        const statusBadge = document.getElementById('tg-status-badge');
+
+        if (sw) sw.checked = Boolean(tg.enabled);
+        if (tokenInput) tokenInput.value = tg.botToken || '';
+        if (chatInput) chatInput.value = tg.adminChatId || '';
+        if (nSuccess) nSuccess.checked = tg.notifyOnSuccess !== false;
+        if (nFailed) nFailed.checked = tg.notifyOnFailed !== false;
+
+        const isOnline = tg.enabled && tg.botToken && tg.adminChatId;
+        if (badge) {
+          badge.innerText = isOnline ? 'AKTIF' : 'OFF';
+          badge.className = `ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isOnline ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30' : 'bg-slate-800 text-slate-400'}`;
+        }
+        if (statusBadge) {
+          statusBadge.innerText = isOnline ? 'AKTIF & SIAP' : 'NONAKTIF';
+          statusBadge.className = `text-sm font-bold font-mono mt-0.5 ${isOnline ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi Telegram:", e);
+      }
+    }
+
+    function toggleTgEnableUI() {
+      const sw = document.getElementById('tg-enable-switch');
+      const badge = document.getElementById('badge-tg-status');
+      if (badge && sw) {
+        badge.innerText = sw.checked ? 'AKTIF' : 'OFF';
+        badge.className = `ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${sw.checked ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30' : 'bg-slate-800 text-slate-400'}`;
+      }
+    }
+
+    async function saveTelegramConfig() {
+      const btn = document.getElementById('btn-save-tg');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+      const payload = {
+        enabled: document.getElementById('tg-enable-switch').checked,
+        botToken: document.getElementById('tg-bot-token').value.trim(),
+        adminChatId: document.getElementById('tg-chat-id').value.trim(),
+        notifyOnSuccess: document.getElementById('tg-notify-success').checked,
+        notifyOnFailed: document.getElementById('tg-notify-failed').checked
+      };
+
+      try {
+        const res = await fetch('/api/telegram/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.success) {
+          alert("✅ Berhasil! " + d.message);
+          loadTelegramConfig();
+        } else {
+          alert("❌ Gagal menyimpan: " + (d.error || 'Terjadi kesalahan'));
+        }
+      } catch (e) {
+        alert("❌ Error jaringan: " + e.message);
+      } finally {
+        if (btn) btn.innerHTML = originalText;
+      }
+    }
+
+    async function testTelegramBot() {
+      const btn = document.getElementById('btn-test-tg');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Tes...';
+
+      const botToken = document.getElementById('tg-bot-token').value.trim();
+      const adminChatId = document.getElementById('tg-chat-id').value.trim();
+
+      if (!botToken || !adminChatId) {
+        alert("⚠️ Mohon isi Bot Token dan Admin Chat ID terlebih dahulu.");
+        if (btn) btn.innerHTML = originalText;
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/telegram/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ botToken, adminChatId })
+        });
+        const d = await res.json();
+        if (d.success) {
+          alert("🎉 SUKSES! Pesan uji coba berhasil dikirim ke Telegram Anda.\nSilakan cek aplikasi Telegram sekarang.");
+        } else {
+          alert("❌ Telegram Error: " + (d.error || 'Gagal mengirim pesan'));
+        }
+      } catch (e) {
+        alert("❌ Error menghubungi server: " + e.message);
+      } finally {
+        if (btn) btn.innerHTML = originalText;
+      }
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshData();
+      loadTelegramConfig();
+      loadDailyProfitRecharts();
+      setInterval(refreshData, 5000);
+    });
   </script>
 </body>
 </html>

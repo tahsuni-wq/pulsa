@@ -3,7 +3,7 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/img_pulsa_icon"
+        android:drawable="@drawable/img_kirana_logo"
         android:gravity="center" />
 </layer-list>
 

@@ -100,7 +100,7 @@ data class CustomerDebtRecord(
 )
 
 data class StoreProfile(
-    val storeName: String = "KONTER PULSAPAY",
+    val storeName: String = "KIRANA PAY STORE",
     val address: String = "Jl. Merdeka No. 45, Indonesia",
     val phone: String = "0812-3456-7890",
     val footerMessage: String = "Terima kasih atas kunjungan Anda!\nSimpan struk ini sebagai bukti pembayaran sah."

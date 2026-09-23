@@ -162,7 +162,7 @@ fun TransactionScreen(
                     ) {
                         Column {
                             Text(
-                                text = "PulsaPay H2H Multi-Agregator",
+                                text = "Kirana Pay H2H Gateway",
                                 color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 18.sp

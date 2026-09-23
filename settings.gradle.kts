@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "PulsaPay H2H"
+rootProject.name = "Kirana Pay"
 
 include(":app")

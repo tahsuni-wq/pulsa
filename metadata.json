@@ -1,6 +1,6 @@
 {
-  "name": "Remix PulsaPay H2H",
-  "description": "Aplikasi penjualan pulsa \u0026 PPOB multi-provider H2H (Digiflazz, VIP Reseller, Tripay, Custom API) dengan smart failover dan cetak struk.",
+  "name": "Kirana Pay",
+  "description": "Server Gateway Pulsa & PPOB H2H Modern dengan Direct Telco (Telkomsel, Indosat, XL, PLN), Multi-Supplier, Notifikasi Telegram Real-time, dan Daily Profit Analytics.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
