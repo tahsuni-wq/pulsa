@@ -1,0 +1,8 @@
+{
+  "name": "Remix PulsaPay H2H",
+  "description": "Aplikasi penjualan pulsa \u0026 PPOB multi-provider H2H (Digiflazz, VIP Reseller, Tripay, Custom API) dengan smart failover dan cetak struk.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
