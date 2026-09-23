@@ -1,0 +1,17 @@
+{
+  "name": "pulsa-h2h-server",
+  "version": "1.0.0",
+  "description": "Server Gateway Pulsa & PPOB H2H dengan Web Dashboard Monitoring Terpusat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["pulsa", "ppob", "h2h", "digiflazz", "tripay", "vip-reseller", "proxmox"],
+  "author": "PulsaPay Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

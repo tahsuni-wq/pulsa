@@ -431,19 +431,71 @@ class H2HNetworkEngine {
             put("partner_ref", refId)
             put("token", provider.apiKey)
             put("pin", provider.secretOrPin)
+            put("username", provider.apiUsername)
         }
-        val sn = "CUSTOM-SN-${Random.nextInt(1000000, 9999999)}"
-        return H2HTransactionResult(
-            isSuccess = true,
-            isPending = false,
-            status = "SUKSES",
-            serialNumber = sn,
-            responseCode = "00",
-            message = "Sukses (Custom Server H2H)",
-            providerUsed = provider,
-            requestPayload = reqJson.toString(2),
-            responsePayload = "{ \"status\": \"SUCCESS\", \"sn\": \"$sn\", \"ref\": \"$refId\" }"
-        )
+        val requestString = reqJson.toString(2)
+
+        if (provider.isSandbox || provider.apiUrl.isBlank() || provider.apiKey.startsWith("demo_") || provider.apiKey.isBlank()) {
+            val sn = "CUSTOM-SN-${Random.nextInt(1000000, 9999999)}"
+            return H2HTransactionResult(
+                isSuccess = true,
+                isPending = false,
+                status = "SUKSES",
+                serialNumber = sn,
+                responseCode = "00",
+                message = "Sukses (Simulator Server Proxmox)",
+                providerUsed = provider,
+                requestPayload = requestString,
+                responsePayload = "{ \"status\": \"SUCCESS\", \"sn\": \"$sn\", \"ref\": \"$refId\" }"
+            )
+        }
+
+        // Real Live HTTP Call to user's Proxmox Server / Custom H2H endpoint
+        return try {
+            val endpoint = if (provider.apiUrl.endsWith("/transaksi")) provider.apiUrl else "${provider.apiUrl.trimEnd('/')}/transaksi"
+            val requestBody = requestString.toRequestBody(jsonMediaType)
+            val request = Request.Builder()
+                .url(endpoint)
+                .post(requestBody)
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer ${provider.apiKey}")
+                .build()
+
+            val response = client.newCall(request).execute()
+            val respBody = response.body?.string() ?: "{}"
+            val jsonObj = JSONObject(respBody)
+
+            val status = jsonObj.optString("status", "FAILED")
+            val isSuccess = status.equals("SUCCESS", ignoreCase = true) || status.equals("SUKSES", ignoreCase = true)
+            val isPending = status.equals("PENDING", ignoreCase = true)
+            val sn = jsonObj.optString("sn", "")
+            val msg = jsonObj.optString("message", "Respon Server Proxmox")
+            val rc = jsonObj.optString("rc", if (isSuccess) "00" else "99")
+
+            H2HTransactionResult(
+                isSuccess = isSuccess,
+                isPending = isPending,
+                status = if (isSuccess) "SUKSES" else if (isPending) "PENDING" else "GAGAL",
+                serialNumber = sn,
+                responseCode = rc,
+                message = msg,
+                providerUsed = provider,
+                requestPayload = requestString,
+                responsePayload = respBody
+            )
+        } catch (e: Exception) {
+            H2HTransactionResult(
+                isSuccess = false,
+                isPending = false,
+                status = "GAGAL",
+                serialNumber = "",
+                responseCode = "ERR_NET",
+                message = "Gagal terhubung ke Server Proxmox: ${e.message}",
+                providerUsed = provider,
+                requestPayload = requestString,
+                responsePayload = "{ \"error\": \"${e.localizedMessage}\" }"
+            )
+        }
     }
 
     suspend fun checkBalance(provider: H2HProvider): H2HBalanceResult = withContext(Dispatchers.IO) {
@@ -492,6 +544,32 @@ class H2HNetworkEngine {
                     val data = jsonObj.optJSONObject("data")
                     val balance = data?.optLong("balance", provider.balance) ?: provider.balance
                     H2HBalanceResult(true, balance, "Sukses Cek Saldo VIP", respBody)
+                }
+                ProviderType.CUSTOM_REST -> {
+                    if (provider.apiUrl.isNotBlank()) {
+                        val endpoint = if (provider.apiUrl.endsWith("/cek-saldo")) provider.apiUrl else "${provider.apiUrl.trimEnd('/')}/cek-saldo"
+                        val reqJson = JSONObject().apply {
+                            put("token", provider.apiKey)
+                            put("pin", provider.secretOrPin)
+                            put("username", provider.apiUsername)
+                        }
+                        val requestBody = reqJson.toString().toRequestBody(jsonMediaType)
+                        val request = Request.Builder()
+                            .url(endpoint)
+                            .post(requestBody)
+                            .header("Content-Type", "application/json")
+                            .header("Authorization", "Bearer ${provider.apiKey}")
+                            .build()
+                        val response = client.newCall(request).execute()
+                        val respBody = response.body?.string() ?: "{}"
+                        val jsonObj = JSONObject(respBody)
+                        val balance = if (jsonObj.has("balance")) jsonObj.optLong("balance", provider.balance)
+                            else if (jsonObj.has("data")) jsonObj.optJSONObject("data")?.optLong("balance", provider.balance) ?: provider.balance
+                            else provider.balance
+                        H2HBalanceResult(true, balance, "Sukses Cek Saldo Server Proxmox", respBody)
+                    } else {
+                        H2HBalanceResult(true, provider.balance, "Saldo lokal aktif", "{}")
+                    }
                 }
                 else -> {
                     H2HBalanceResult(true, provider.balance, "Saldo lokal aktif", "{}")

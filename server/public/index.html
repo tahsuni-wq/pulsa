@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulsaPay H2H Server - Proxmox Central Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased custom-scrollbar">
+
+  <!-- Sidebar -->
+  <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
+    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 font-black text-xl">
+        <i class="fa-solid fa-server"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-tight text-white flex items-center gap-2">
+          PulsaPay H2H
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">ONLINE</span>
+        </h1>
+        <p class="text-xs text-slate-400">Proxmox Gateway</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="p-3 space-y-1 text-sm font-medium flex-1">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition">
+        <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+        <span>Ringkasan Dashboard</span>
+      </button>
+      <button onclick="switchTab('transactions')" id="nav-transactions" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-bolt w-5 text-center"></i>
+        <span>Monitor Transaksi</span>
+        <span id="badge-tx-count" class="ml-auto text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
+      </button>
+      <button onclick="switchTab('providers')" id="nav-providers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-network-wired w-5 text-center"></i>
+        <span>Agregator H2H</span>
+      </button>
+      <button onclick="switchTab('test')" id="nav-test" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-paper-plane w-5 text-center"></i>
+        <span>Test Kirim Pulsa</span>
+      </button>
+      <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-solid fa-tags w-5 text-center"></i>
+        <span>Katalog & Markup</span>
+      </button>
+      <button onclick="switchTab('connect')" id="nav-connect" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+        <i class="fa-brands fa-android w-5 text-center text-emerald-400"></i>
+        <span>Koneksi HP Android</span>
+      </button>
+    </nav>
+
+    <!-- Host Info Footer -->
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
+      <div class="flex items-center justify-between mb-1">
+        <span>Status Host</span>
+        <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sehat
+        </span>
+      </div>
+      <div class="text-[11px] text-slate-500 font-mono truncate" id="host-domain">
+        Port: 3000 | Domain Proxmox
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <!-- Top Bar -->
+    <header class="h-16 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between sticky top-0 z-20 backdrop-blur">
+      <div class="flex items-center gap-4">
+        <span class="text-slate-400 text-sm hidden md:inline">Server Gateway H2H</span>
+        <span class="text-slate-600 hidden md:inline">/</span>
+        <h2 id="top-title" class="text-base font-semibold text-white">Ringkasan Dashboard</h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="refreshData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg flex items-center gap-2 transition border border-slate-700">
+          <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i>
+          <span>Perbarui Data</span>
+        </button>
+        <div class="flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Auto-Sync: <b>Aktif</b></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- TAB 1: DASHBOARD OVERVIEW -->
+    <section id="tab-dashboard" class="p-6 space-y-6">
+      <!-- 4 Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass p-5 rounded-2xl relative overflow-hidden">
+          <div class="text-xs font-medium text-slate-400 mb-1">Total Saldo Modal di Agregator</div>
+          <div class="text-2xl font-black text-emerald-400 font-mono tracking-tight" id="stat-total-balance">Rp 0</div>
+          <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+            <i class="fa-solid fa-wallet text-emerald-500"></i>
+            <span>Siap potong untuk transaksi</span>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl relative overflow-hidden">
+          <div class="text-xs font-medium text-slate-400 mb-1">Omset Transaksi Hari Ini</div>
+          <div class="text-2xl font-black text-cyan-400 font-mono tracking-tight" id="stat-today-revenue">Rp 0</div>
+          <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+            <i class="fa-solid fa-receipt text-cyan-500"></i>
+            <span id="stat-today-count">0 transaksi hari ini</span>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl relative overflow-hidden">
+          <div class="text-xs font-medium text-slate-400 mb-1">Estimasi Keuntungan Bersih</div>
+          <div class="text-2xl font-black text-amber-400 font-mono tracking-tight" id="stat-profit">Rp 0</div>
+          <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+            <i class="fa-solid fa-coins text-amber-500"></i>
+            <span>Margin laba dari penjualan</span>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl relative overflow-hidden">
+          <div class="text-xs font-medium text-slate-400 mb-1">Tingkat Kesuksesan (Success Rate)</div>
+          <div class="text-2xl font-black text-white font-mono tracking-tight" id="stat-success-rate">100%</div>
+          <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5" id="stat-tx-breakdown">
+            <span class="text-emerald-400 font-medium">0 Sukses</span> • 
+            <span class="text-rose-400 font-medium">0 Gagal</span> • 
+            <span class="text-amber-400 font-medium">0 Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Saldo Cards Per Agregator -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-building-columns text-emerald-400"></i>
+            Saldo Real-time Supplier & Agregator
+          </h3>
+          <span class="text-xs text-slate-400">Otomatis failover jika saldo salah satu menipis</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="aggregator-cards-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Transaction Chart & Quick Action -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass p-5 rounded-2xl lg:col-span-2">
+          <h4 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-cyan-400"></i>
+            Grafik Penjualan & Aktivitas Pulsa (Hari Ini)
+          </h4>
+          <div class="h-64">
+            <canvas id="trxChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <h4 class="font-semibold text-sm text-slate-200 mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+              Status Failover Otomatis
+            </h4>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+              Ketika ada request pembelian dari aplikasi Android atau kasir, server akan mencoba agregator utama terlebih dahulu. Jika supplier utama mengalami gangguan atau SKU kosong, server langsung mengalihkan rute ke supplier cadangan secara instan tanpa membatalkan transaksi pembeli.
+            </p>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-400">Prioritas 1</span>
+                <span class="text-emerald-400 font-bold" id="quick-p1">Digiflazz H2H</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-400">Prioritas 2</span>
+                <span class="text-amber-400 font-bold" id="quick-p2">VIP Reseller</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="switchTab('test')" class="w-full mt-4 py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Test Kirim Transaksi Sekarang</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: LIVE MONITOR TRANSAKSI -->
+    <section id="tab-transactions" class="p-6 space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="font-bold text-lg text-white">Live Monitor Transaksi Kasir & H2H</h3>
+          <p class="text-xs text-slate-400">Semua transaksi dari HP Android dan kasir tercatat secara transparan di sini</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="tx-search-input" placeholder="Cari No HP / SN / Ref ID..." oninput="filterTransactions()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-full sm:w-64 font-mono">
+          <select id="tx-filter-status" onchange="filterTransactions()" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none">
+            <option value="ALL">Semua Status</option>
+            <option value="SUCCESS">Sukses</option>
+            <option value="PENDING">Pending</option>
+            <option value="FAILED">Gagal</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="glass rounded-2xl overflow-hidden border border-slate-800">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800 uppercase font-medium">
+              <tr>
+                <th class="py-3 px-4">Waktu</th>
+                <th class="py-3 px-4">Ref ID</th>
+                <th class="py-3 px-4">No Tujuan</th>
+                <th class="py-3 px-4">Produk</th>
+                <th class="py-3 px-4">Jalur H2H</th>
+                <th class="py-3 px-4">Harga / Laba</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">SN / Catatan</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-tbody" class="divide-y divide-slate-800 font-mono">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: AGREGATOR H2H -->
+    <section id="tab-providers" class="p-6 space-y-6 hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-lg text-white">Konfigurasi Agregator & Kredensial H2H</h3>
+          <p class="text-xs text-slate-400">Atur API Key, Endpoint, dan Mode Sandbox untuk masing-masing supplier</p>
+        </div>
+        <button onclick="openProviderModal(null)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-900/30 transition">
+          <i class="fa-solid fa-plus"></i>
+          <span>Tambah Provider Baru</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="providers-list-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: TEST KIRIM PULSA -->
+    <section id="tab-test" class="p-6 space-y-6 hidden">
+      <div class="max-w-2xl mx-auto glass p-6 rounded-2xl">
+        <h3 class="font-bold text-base text-white mb-1 flex items-center gap-2">
+          <i class="fa-solid fa-vial text-emerald-400"></i>
+          Simulator & Test Eksekusi Transaksi H2H
+        </h3>
+        <p class="text-xs text-slate-400 mb-5">
+          Uji coba kelancaran respon API agregator langsung dari browser Anda tanpa harus menggunakan HP Android.
+        </p>
+
+        <form id="test-form" onsubmit="handleTestTrx(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Nomor Tujuan / Pelanggan</label>
+            <input type="text" id="test-destination" placeholder="Contoh: 081234567890" value="081299887766" required class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Pilih Produk</label>
+            <select id="test-product" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Target Rute Provider</label>
+            <select id="test-provider" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <button type="submit" id="btn-submit-test" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Kirim Test Transaksi Sekarang</span>
+          </button>
+        </form>
+
+        <!-- Test Result Output -->
+        <div id="test-result-box" class="mt-6 hidden">
+          <div class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-terminal text-cyan-400"></i>
+            <span>Respon Server:</span>
+          </div>
+          <pre id="test-result-json" class="p-4 bg-slate-900 rounded-xl font-mono text-[11px] text-emerald-400 border border-slate-800 overflow-x-auto"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: KATALOG & MARKUP -->
+    <section id="tab-products" class="p-6 space-y-6 hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-lg text-white">Daftar Produk, Harga Beli & Harga Jual</h3>
+          <p class="text-xs text-slate-400">Atur margin laba bersih yang didapat dari setiap nominal transaksi</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden border border-slate-800">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800 uppercase font-medium">
+              <tr>
+                <th class="py-3 px-4">Kode SKU</th>
+                <th class="py-3 px-4">Nama Produk</th>
+                <th class="py-3 px-4">Operator</th>
+                <th class="py-3 px-4">Harga Modal H2H</th>
+                <th class="py-3 px-4">Harga Jual Kasir</th>
+                <th class="py-3 px-4">Keuntungan</th>
+                <th class="py-3 px-4 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody" class="divide-y divide-slate-800 font-mono">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: KONEKSI ANDROID & DOKUMENTASI -->
+    <section id="tab-connect" class="p-6 space-y-6 hidden">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="glass p-6 rounded-2xl border-emerald-500/30">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+              <i class="fa-brands fa-android"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-white">Panduan Menghubungkan Aplikasi HP Android ke Proxmox</h3>
+              <p class="text-xs text-slate-400">Gunakan kredensial di bawah ini pada menu "Provider H2H" di aplikasi Android PulsaPay</p>
+            </div>
+          </div>
+
+          <div class="space-y-4 text-xs font-mono">
+            <div>
+              <span class="text-slate-400 block mb-1">1. Tipe Provider di Android:</span>
+              <span class="inline-block bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-400 font-bold">CUSTOM REST</span>
+            </div>
+
+            <div>
+              <span class="text-slate-400 block mb-1">2. Base URL Endpoint (Domain Proxmox Anda):</span>
+              <div class="flex items-center gap-2">
+                <input type="text" readonly id="cfg-endpoint" value="https://domain-anda.com/api/v1" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-cyan-400 select-all">
+                <button onclick="copyToClipboard('cfg-endpoint')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+              </div>
+            </div>
+
+            <div>
+              <span class="text-slate-400 block mb-1">3. API Key / Token:</span>
+              <div class="flex items-center gap-2">
+                <input type="text" readonly id="cfg-token" value="PROXMOX_PULSAPAY_SECURE_TOKEN_2026" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-emerald-400 select-all">
+                <button onclick="copyToClipboard('cfg-token')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+              </div>
+            </div>
+
+            <div>
+              <span class="text-slate-400 block mb-1">4. PIN Transaksi:</span>
+              <div class="flex items-center gap-2">
+                <input type="text" readonly id="cfg-pin" value="1234" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-amber-400 select-all">
+                <button onclick="copyToClipboard('cfg-pin')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white"><i class="fa-solid fa-copy"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Webhook URLs -->
+        <div class="glass p-6 rounded-2xl">
+          <h4 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-bullhorn text-cyan-400"></i>
+            URL Callback / Webhook untuk Pasang di Digiflazz / Tripay
+          </h4>
+          <p class="text-xs text-slate-400 mb-4">
+            Salin URL ini dan tempel di portal member Digiflazz atau Tripay Anda agar status transaksi sukses/gagal langsung ter-update otomatis secara real-time.
+          </p>
+          <div class="space-y-3 text-xs font-mono">
+            <div>
+              <span class="text-slate-400 block mb-1">Webhook Digiflazz:</span>
+              <input type="text" readonly id="wh-digi" value="https://domain-anda.com/api/webhook/digiflazz" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-slate-300 select-all">
+            </div>
+            <div>
+              <span class="text-slate-400 block mb-1">Webhook Tripay:</span>
+              <input type="text" readonly id="wh-tripay" value="https://domain-anda.com/api/webhook/tripay" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-slate-300 select-all">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass max-w-2xl w-full rounded-2xl p-6 relative border border-slate-700">
+      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-base font-bold text-white mb-1" id="modal-tx-id">TRX Details</h3>
+      <p class="text-xs text-slate-400 mb-4" id="modal-tx-meta"></p>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <span class="text-slate-400 block mb-1 font-semibold">Catatan Rute Failover:</span>
+          <div id="modal-tx-failover" class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 font-mono text-[11px]"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block mb-1 font-semibold">Raw Request JSON:</span>
+          <pre id="modal-tx-rawreq" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-mono text-[11px] max-h-36 overflow-y-auto"></pre>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block mb-1 font-semibold">Raw Response JSON:</span>
+          <pre id="modal-tx-rawresp" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 font-mono text-[11px] max-h-36 overflow-y-auto"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Provider Edit Modal -->
+  <div id="provider-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass max-w-md w-full rounded-2xl p-6 relative border border-slate-700">
+      <button onclick="closeProviderModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-base font-bold text-white mb-4" id="prov-modal-title">Konfigurasi Agregator</h3>
+      
+      <form id="prov-form" onsubmit="saveProvider(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="p-id">
+        <div>
+          <label class="block text-slate-300 mb-1">Nama Provider</label>
+          <input type="text" id="p-name" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Tipe Integrasi</label>
+          <select id="p-type" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+            <option value="DIGIFLAZZ">Digiflazz H2H</option>
+            <option value="VIP_RESELLER">VIP Reseller</option>
+            <option value="TRIPAY">Tripay H2H</option>
+            <option value="CUSTOM_REST">Custom REST Server</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">API Base URL</label>
+          <input type="text" id="p-url" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">API Username / Merchant Code</label>
+          <input type="text" id="p-username" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">API Key / Secret Token</label>
+          <input type="password" id="p-key" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">PIN Transaksi</label>
+          <input type="text" id="p-pin" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono">
+        </div>
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="p-sandbox" class="rounded bg-slate-900 border-slate-700">
+          <label for="p-sandbox" class="text-slate-300">Mode Sandbox / Simulasi (Tanpa potong saldo)</label>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="p-active" checked class="rounded bg-slate-900 border-slate-700">
+          <label for="p-active" class="text-slate-300">Aktifkan Jalur Agregator Ini</label>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition">
+          Simpan Konfigurasi
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let globalData = { stats: {}, transactions: [], providers: [], products: [] };
+    let chartInstance = null;
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'transactions', 'providers', 'test', 'products', 'connect'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`)?.classList.add('hidden');
+        const navBtn = document.getElementById(`nav-${t}`);
+        if (navBtn) {
+          navBtn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition";
+        }
+      });
+      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition";
+      }
+
+      const titles = {
+        dashboard: "Ringkasan Dashboard",
+        transactions: "Live Monitor Transaksi",
+        providers: "Koneksi Agregator H2H",
+        test: "Test Kirim Pulsa",
+        products: "Katalog & Markup",
+        connect: "Koneksi HP Android"
+      };
+      document.getElementById('top-title').innerText = titles[tabId] || "Dashboard";
+
+      if (tabId === 'dashboard') renderChart();
+    }
+
+    // Format Rupiah
+    function formatRupiah(num) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
+    }
+
+    // Refresh Data
+    async function refreshData() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin');
+      try {
+        const [statsRes, txRes, provRes, prodRes] = await Promise.all([
+          fetch('/api/stats').then(r => r.json()),
+          fetch('/api/transactions?limit=100').then(r => r.json()),
+          fetch('/api/providers').then(r => r.json()),
+          fetch('/api/products').then(r => r.json())
+        ]);
+
+        globalData = { stats: statsRes, transactions: txRes, providers: provRes, products: prodRes };
+        renderAll();
+      } catch (err) {
+        console.error("Gagal sinkronisasi data:", err);
+      } finally {
+        setTimeout(() => icon.classList.remove('fa-spin'), 600);
+      }
+    }
+
+    function renderAll() {
+      // 1. Stats
+      const s = globalData.stats;
+      document.getElementById('stat-total-balance').innerText = formatRupiah(s.totalAggregatorBalance);
+      document.getElementById('stat-today-revenue').innerText = formatRupiah(s.todayRevenue);
+      document.getElementById('stat-today-count').innerText = `${s.todayTransactions || 0} transaksi hari ini`;
+      document.getElementById('stat-profit').innerText = formatRupiah(s.totalProfit);
+
+      const total = s.totalTransactions || 0;
+      const rate = total > 0 ? Math.round((s.successCount / total) * 100) : 100;
+      document.getElementById('stat-success-rate').innerText = `${rate}%`;
+      document.getElementById('stat-tx-breakdown').innerHTML = `
+        <span class="text-emerald-400 font-medium">${s.successCount || 0} Sukses</span> • 
+        <span class="text-rose-400 font-medium">${s.failedCount || 0} Gagal</span> • 
+        <span class="text-amber-400 font-medium">${s.pendingCount || 0} Pending</span>
+      `;
+      document.getElementById('badge-tx-count').innerText = globalData.transactions.length;
+
+      // 2. Providers Cards
+      renderProviderCards();
+
+      // 3. Transactions Table
+      filterTransactions();
+
+      // 4. Products Table
+      renderProducts();
+
+      // 5. Test Options
+      populateTestDropdowns();
+
+      // 6. Dynamic domain display
+      const currentHost = window.location.origin;
+      document.getElementById('host-domain').innerText = currentHost;
+      document.getElementById('cfg-endpoint').value = `${currentHost}/api/v1`;
+      document.getElementById('wh-digi').value = `${currentHost}/api/webhook/digiflazz`;
+      document.getElementById('wh-tripay').value = `${currentHost}/api/webhook/tripay`;
+
+      renderChart();
+    }
+
+    function renderProviderCards() {
+      const container = document.getElementById('aggregator-cards-container');
+      const listContainer = document.getElementById('providers-list-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (listContainer) listContainer.innerHTML = '';
+
+      const p1 = globalData.providers.find(p => p.priorityOrder === 1);
+      const p2 = globalData.providers.find(p => p.priorityOrder === 2);
+      if (p1) document.getElementById('quick-p1').innerText = p1.name;
+      if (p2) document.getElementById('quick-p2').innerText = p2.name;
+
+      globalData.providers.forEach(p => {
+        // Mini Card on Dashboard
+        const card = document.createElement('div');
+        card.className = "glass p-4 rounded-xl border border-slate-800 relative";
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${p.isActive ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
+              <span class="font-bold text-xs text-white">${p.name}</span>
+              ${p.isPrimary ? '<span class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1 py-0.2 rounded font-bold">UTAMA</span>' : ''}
+              ${p.isSandbox ? '<span class="text-[9px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-1 py-0.2 rounded">SANDBOX</span>' : ''}
+            </div>
+            <button onclick="checkBalance('${p.id}')" class="text-slate-400 hover:text-emerald-400 text-xs p-1" title="Cek Saldo Realtime">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+          </div>
+          <div class="text-lg font-black text-white font-mono">${formatRupiah(p.balance)}</div>
+          <div class="text-[10px] text-slate-400 mt-1 truncate">${p.statusMessage || 'Siap'}</div>
+        `;
+        container.appendChild(card);
+
+        // Full Card on Providers Tab
+        if (listContainer) {
+          const fCard = document.createElement('div');
+          fCard.className = "glass p-5 rounded-2xl border border-slate-800 space-y-3";
+          fCard.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-black">
+                  #${p.priorityOrder || 1}
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                    ${p.name}
+                    ${p.isPrimary ? '<span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold">JALUR UTAMA</span>' : ''}
+                  </h4>
+                  <p class="text-[11px] text-slate-400 font-mono truncate max-w-xs">${p.apiUrl}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-base font-black text-emerald-400 font-mono">${formatRupiah(p.balance)}</div>
+                <span class="text-[10px] ${p.isActive ? 'text-emerald-400' : 'text-slate-500'} font-bold">
+                  ${p.isActive ? '● AKTIF' : '○ NONAKTIF'}
+                </span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-900 rounded-xl font-mono text-[11px] space-y-1 text-slate-400 border border-slate-800">
+              <div class="flex justify-between"><span>Merchant / User:</span> <b class="text-slate-200">${p.apiUsername || '-'}</b></div>
+              <div class="flex justify-between"><span>API Key:</span> <span class="text-slate-500">${p.apiKey ? p.apiKey.substring(0, 8) + '••••••••' : '-'}</span></div>
+              <div class="flex justify-between"><span>Mode:</span> <b class="${p.isSandbox ? 'text-cyan-400' : 'text-emerald-400'}">${p.isSandbox ? 'Sandbox (Simulasi)' : 'Production (Live)'}</b></div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button onclick="checkBalance('${p.id}')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 border border-slate-700">
+                <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
+                <span>Cek Saldo</span>
+              </button>
+              <button onclick='openProviderModal(${JSON.stringify(p)})' class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
+          `;
+          listContainer.appendChild(fCard);
+        }
+      });
+    }
+
+    async function checkBalance(provId) {
+      try {
+        const res = await fetch(`/api/providers/${provId}/check-balance`, { method: 'POST' }).then(r => r.json());
+        alert(`Status Cek Saldo: ${res.message}\nSaldo Terkini: ${formatRupiah(res.balance)}`);
+        refreshData();
+      } catch (err) {
+        alert("Gagal menghubungi supplier: " + err.message);
+      }
+    }
+
+    // Filter & Render Transactions
+    function filterTransactions() {
+      const q = (document.getElementById('tx-search-input')?.value || '').toLowerCase();
+      const status = document.getElementById('tx-filter-status')?.value || 'ALL';
+      const tbody = document.getElementById('transactions-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      let list = globalData.transactions;
+
+      if (status !== 'ALL') list = list.filter(t => t.status === status);
+      if (q) list = list.filter(t => 
+        (t.destination && t.destination.includes(q)) ||
+        (t.id && t.id.toLowerCase().includes(q)) ||
+        (t.sn && t.sn.toLowerCase().includes(q)) ||
+        (t.productCode && t.productCode.toLowerCase().includes(q))
+      );
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-500 font-sans">Belum ada data transaksi yang sesuai filter.</td></tr>`;
+        return;
+      }
+
+      list.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60 transition";
+        
+        let badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        if (t.status === 'FAILED') badgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
+        if (t.status === 'PENDING') badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+
+        const timeStr = t.date ? new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-slate-400">${timeStr}</td>
+          <td class="py-3 px-4 text-slate-300 font-bold">${t.id}</td>
+          <td class="py-3 px-4 text-cyan-400 font-bold">${t.destination}</td>
+          <td class="py-3 px-4 text-slate-200">${t.productCode}</td>
+          <td class="py-3 px-4 text-slate-400 font-sans">${t.providerName || '-'}</td>
+          <td class="py-3 px-4 text-white">${formatRupiah(t.sellPrice)} <span class="text-emerald-400 text-[10px]">(+${formatRupiah(t.profit)})</span></td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded border text-[10px] font-bold ${badgeColor}">${t.status}</span></td>
+          <td class="py-3 px-4 text-slate-400 truncate max-w-[150px]" title="${t.sn || t.responseMessage}">${t.sn || t.responseMessage || '-'}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick='openDetailModal(${JSON.stringify(t)})' class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-sans text-[11px] transition">
+              Detail
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openDetailModal(tx) {
+      document.getElementById('modal-tx-id').innerText = `${tx.id} - ${tx.productName || tx.productCode}`;
+      document.getElementById('modal-tx-meta').innerText = `Waktu: ${new Date(tx.date).toLocaleString('id-ID')} | Tujuan: ${tx.destination} | Provider: ${tx.providerName}`;
+      document.getElementById('modal-tx-failover').innerText = tx.failoverLog || "Direct primary route (Tanpa failover)";
+      document.getElementById('modal-tx-rawreq').innerText = tx.rawRequest || "{}";
+      document.getElementById('modal-tx-rawresp').innerText = tx.rawResponse || "{}";
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    // Products
+    function renderProducts() {
+      const tbody = document.getElementById('products-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      globalData.products.forEach(p => {
+        const profit = p.sellPrice - p.basePrice;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-cyan-400">${p.code}</td>
+          <td class="py-3 px-4 font-sans text-white">${p.name}</td>
+          <td class="py-3 px-4 text-slate-400 font-sans">${p.operator}</td>
+          <td class="py-3 px-4 text-slate-400">${formatRupiah(p.basePrice)}</td>
+          <td class="py-3 px-4 text-emerald-400 font-bold">${formatRupiah(p.sellPrice)}</td>
+          <td class="py-3 px-4 text-amber-400 font-bold">+${formatRupiah(profit)}</td>
+          <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">AKTIF</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function populateTestDropdowns() {
+      const prodSelect = document.getElementById('test-product');
+      const provSelect = document.getElementById('test-provider');
+      if (!prodSelect || !provSelect) return;
+
+      prodSelect.innerHTML = globalData.products.map(p => `<option value="${p.code}">${p.code} - ${p.name} (${formatRupiah(p.basePrice)})</option>`).join('');
+      provSelect.innerHTML = globalData.providers.filter(p => p.isActive).map(p => `<option value="${p.id}">${p.name} (${p.isSandbox ? 'Sandbox' : 'Live'})</option>`).join('');
+    }
+
+    async function handleTestTrx(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-test');
+      const box = document.getElementById('test-result-box');
+      const output = document.getElementById('test-result-json');
+
+      const dest = document.getElementById('test-destination').value;
+      const prod = document.getElementById('test-product').value;
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menghubungi Provider H2H...`;
+
+      try {
+        const res = await fetch('/api/v1/transaksi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destination: dest,
+            product_code: prod,
+            token: "PROXMOX_PULSAPAY_SECURE_TOKEN_2026",
+            pin: "1234"
+          })
+        }).then(r => r.json());
+
+        box.classList.remove('hidden');
+        output.innerText = JSON.stringify(res, null, 2);
+        refreshData();
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Test Transaksi Sekarang`;
+      }
+    }
+
+    // Provider Config Modal
+    function openProviderModal(prov) {
+      document.getElementById('p-id').value = prov ? prov.id : '';
+      document.getElementById('p-name').value = prov ? prov.name : '';
+      document.getElementById('p-type').value = prov ? prov.type : 'DIGIFLAZZ';
+      document.getElementById('p-url').value = prov ? prov.apiUrl : 'https://api.digiflazz.com/v1';
+      document.getElementById('p-username').value = prov ? prov.apiUsername : '';
+      document.getElementById('p-key').value = prov ? prov.apiKey : '';
+      document.getElementById('p-pin').value = prov ? prov.secretOrPin : '';
+      document.getElementById('p-sandbox').checked = prov ? prov.isSandbox : true;
+      document.getElementById('p-active').checked = prov ? prov.isActive : true;
+      document.getElementById('prov-modal-title').innerText = prov ? `Edit ${prov.name}` : 'Tambah Agregator Baru';
+      document.getElementById('provider-modal').classList.remove('hidden');
+    }
+
+    function closeProviderModal() {
+      document.getElementById('provider-modal').classList.add('hidden');
+    }
+
+    async function saveProvider(e) {
+      e.preventDefault();
+      const pData = {
+        id: document.getElementById('p-id').value || undefined,
+        name: document.getElementById('p-name').value,
+        type: document.getElementById('p-type').value,
+        apiUrl: document.getElementById('p-url').value,
+        apiUsername: document.getElementById('p-username').value,
+        apiKey: document.getElementById('p-key').value,
+        secretOrPin: document.getElementById('p-pin').value,
+        isSandbox: document.getElementById('p-sandbox').checked,
+        isActive: document.getElementById('p-active').checked
+      };
+
+      try {
+        await fetch('/api/providers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pData)
+        });
+        closeProviderModal();
+        refreshData();
+      } catch (err) {
+        alert("Gagal menyimpan: " + err.message);
+      }
+    }
+
+    function copyToClipboard(elementId) {
+      const el = document.getElementById(elementId);
+      el.select();
+      navigator.clipboard.writeText(el.value);
+      alert("Tersalin ke clipboard!");
+    }
+
+    // Chart.js Setup
+    function renderChart() {
+      const ctx = document.getElementById('trxChart');
+      if (!ctx) return;
+
+      if (chartInstance) chartInstance.destroy();
+
+      const hours = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
+      const counts = [3, 8, 14, 9, 12, 18, 15];
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: hours,
+          datasets: [{
+            label: 'Volume Transaksi Sukses',
+            data: counts,
+            backgroundColor: 'rgba(16, 185, 129, 0.4)',
+            borderColor: '#10b981',
+            borderWidth: 2,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    // Init & Auto Refresh
+    refreshData();
+    setInterval(refreshData, 5000);
+  </script>
+</body>
+</html>
